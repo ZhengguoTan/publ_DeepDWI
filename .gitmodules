@@ -1,3 +1,4 @@
 [submodule "ref"]
 	path = ref
 	url = https://github.com/ZhengguoTan/ref.git
+    update = merge
