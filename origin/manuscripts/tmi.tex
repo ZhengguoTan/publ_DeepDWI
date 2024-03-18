@@ -1,0 +1,196 @@
+\documentclass[journal,twoside,web]{ieeecolor}
+\usepackage{tmi}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+	T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\markboth{\journalname, VOL. XX, NO. XX, XXXX 2024}
+{Tan \MakeLowercase{\textit{et al.}}: DeepDWI}
+
+\begin{document}
+	\title{Diffusion-Weighted Imaging with Learned Nonlinear Latent Space Modeling and Self-Supervised Reconstruction (DeepDWI)}
+
+	\author{Zhengguo Tan, Julius Glaser, Patrick A Liebig, Annika Hofmann, Frederik B Laun, Florian Knoll
+		\thanks{This work was supported in part by
+			German Research Foundation (DFG)
+			under projects 513220538 and 512819079,
+			project 500888779 in the Research Unit RU5534
+			for MR biosignatures at UHF,
+			and by the National Institutes of Health (NIH)
+			under grants R01 EB024532 and P41 EB017183.
+			In addition, scientific support and HPC resources
+			were provided by
+			the Erlangen National High Performance Computing Center (NHR)
+			of Friedrich-Alexander-University Erlangen-Nuremberg (FAU)
+			under the NHR project b143dc.
+			NHR is funded by federal and Bavarian state authorities.
+			NHR@FAU hardware is partially funded by
+			DFG under project 440719683.}
+		\thanks{Z.~T. was with the Department
+			Artificial Intelligence in Biomedical Engineering (AIBE),
+			FAU, Erlangen, Germany.
+			He is now with
+			the Michigan Institute for Imaging Technology and Translation
+			(MIITT),
+			Department of Radiology,
+			University of Michigan, Ann Arbor, MI 48109 USA
+			(e-mail: zgtan@med.umich.edu).}
+		\thanks{J.~G. is with the Department Medical Engineering,
+			FAU, Erlangen, Germany
+			(e-mail: julius.glaser@fau.de).}
+		\thanks{P.~A.~L. is with Siemens Healthcare GmbH, Erlangen, Germany
+			(e-mail: patrick.liebig@siemens-healthineers.com).}
+		\thanks{A.~H. is with the Department AIBE,
+			FAU, Erlangen, Germany
+			(e-mail: annika.ah.hofmann@fau.de).}
+		\thanks{F.~B.~L. is with the Institute of Radiology,
+			University Hospital Erlangen,
+			FAU, Erlangen, Germany
+			(e-mail: Frederik.Laun@uk-erlangen.de).}
+		\thanks{F.~K. is with the Department AIBE,
+			FAU, Erlangen, Germany
+			(e-mail: florian.knoll@fau.de).}
+	}
+
+	\maketitle
+
+	% 250 words
+	\begin{abstract}
+		% These instructions provide guidelines for preparing papers for IEEE Transactions,
+		% but this version is specifically written to describe submission to IEEE TMI.
+		% Use this document as a template if you are using \LaTeX.
+		% Otherwise, use this document as an instruction set.
+		% The electronic file of your paper will be formatted further at IEEE.
+		% Paper titles should be written in uppercase and lowercase letters, not all uppercase.
+		% Avoid writing long formulas with subscripts in the title;
+		% short formulas that identify the elements are fine (e.g., "Nd--Fe--B").
+		% Keep the title short and do not write ``(Invited)'' in the title.
+		% Full names of authors are preferred in the author field, but are not required.
+		% Put a space between authors' initials. Only authors may appear in the author line
+		% of a manuscript. Authors are defined as individuals who have made an identifiable
+		% intellectual contribution to a manuscript to the extent that the individual can defend its contents.
+		% Define all symbols used in the abstract. Do not cite references in the abstract.
+		Keep the abstract to 250 words or less.
+	\end{abstract}
+
+	\begin{IEEEkeywords}
+	Diffusion-weighted imaging, Image reconstruction, Neural network, Latent space, Self-supervised learning
+	\end{IEEEkeywords}
+
+	% ============================== %
+	\section{Introduction}
+	\label{SEC:INTRO}
+	\IEEEPARstart{H}{igh}-dimensional magnetic resonance imaging (HD-MRI),
+	referring to the acquisition, reconstruction, and analysis of
+	multi-dimensional imaging,
+    in contrast to single-contrast-weighted, static, and two-dimensional imaging.
+	Examples of HD-MRI include but are not limited to
+    magnetic resonance spectroscopic imaging (MRSI) \cite{brown_1982_mrsi},
+    diffusion-weighted imaging (DWI) \cite{lebihan_1986_diff},
+    and magnetic resonance fingerprinting (MRF) \cite{ma_2013_mrf}.
+    MRSI uses multiple readout gradients to acquire multiple echo images
+    for the computation of spatially resolved metabolic distribution.
+    DWI utilizes spatially and angularly varying
+    diffusion encoding gradients
+    to obtain multi-contrast diffusion-weighted images
+    as a probe into tissue microstructure.
+    MRF designs a $T_1$- and $T_2$-prepared pseudo-randomized sequence
+    to acquire time-resolved transient-state images,
+    which are matched with Bloch-equation generated dictionaries \cite{doneva_2010_moba}
+	for simultaneous quantitative $T_1$ and $T_2$ mapping.
+
+	HD-MRI, however, conventionally requires long scan time
+	and high computational burden.
+	Advances in parallel imaging
+	\cite{roemer_1990_pi,sodickson_1997_smash,
+	pruessmann_1999_sense,pruessmann_2001_gsense,griswold_2002_grappa}
+	and compressed sensing
+	\cite{lustig_2007_cs,block_2007_cs,liang_2007_psf}
+	have enabled accelerated acquisition for HD-MRI. For instance,
+	Lam et al.~\cite{lam_2014_spice} proposed SPectroscopic Imaging
+	by exploiting spatiospectral CorrElation (SPICE)
+	based on the low-rank modeling.
+	% Block et al.~\cite{block_2014_rad} and Feng et al.~\cite{feng_2014_grasp}
+	% proposed iterative golden-angle radial sparse parallel imaging (GRASP)
+	% with total variation regularization \cite{rudin_1992_tv} in the time domain,
+	% enabling robust free-breathing time-resolved abdominal imaging and
+	% breast dynamic contrast-enhanced imaging with reduced motion artifacts.
+	McGivney et al.~\cite{mcgivney_2014_svdmrf}
+	proposed the use of the singular value decomposition (SVD) and thresholding
+	to compress the MRF dictionary and to reduce the computational burden.
+	Further, Christodoulou et al.~\cite{christodoulou_2018_mt}
+	proposed MR Multitasking with higher-order SVD (HOSVD) modeling
+	and iterative reconstruction
+	for motion-resolved quantitative $T_1$ and $T_2$ mapping.
+    However, the use of patch-based SVD still requires long computational time.
+
+	Beyond sparsity constraint and low-rank modeling,
+	advanced neural networks, e.g.~denoising autoencoder \cite{hinton_2006_ae},
+	have been explored for HD-MRI reconstruction.
+	Lam et al.~\cite{lam_2019_mrsi} proposed
+	to first learn a DAE model
+	from physics-informed simulated data
+	and then incorporate the learned DAE model as a regularizer
+	in iterative reconstruction.
+	This concept was adopted by Mani et al.~\cite{mani_2021_qmodel}
+	for joint $k$-$q$-space DWI reconstruction using learned DAE \textit{priors}.
+	Further, Arefeen et al.~\cite{arefeen_2023_latent} proposed
+	to replace the conventional SVD-based linear subspace modeling
+    \cite{huang_2012_t2basis}
+	by the latent decoder model within DAE
+	for improved multi-$T_2$-weighted image reconstruction.
+	Besides learning a \textit{prior} based on simulated data
+	for regularization or latent space modeling,
+	Hammernik et al.~\cite{hammernik_2018_varnet} and
+	Aggarwal et al.~\cite{aggarwal_2018_modl}
+	proposed supervised learning unroll reconstruction networks,
+	which are trained by fully-sampled in vivo data.
+	Yaman et al.~\cite{yaman_2020_ssdu,yaman_2022_zs}
+	proposed the self-supervised learning unroll network
+    without fully-sampled data,
+	which builds upon the concept of cross-validation in machine learning.
+
+    The capability of DAE to learn diffusion MRI models, however, 
+
+
+
+	% ============================== %
+	\section{Theory}
+
+
+	% ============================== %
+	\section{Methods}
+
+    \subsection{Learning a VAE}
+
+
+	% ============================== %
+	\section{Results}
+
+
+	% ============================== %
+	\section{Discussion}
+
+
+	% ============================== %
+	\section{Conclusion}
+
+
+	% ============================== %
+	\section*{Acknowledgment}
+
+	Z.~T. thanks to Ms.~Soundarya Soundarresan for
+	her work and discussion on denoising autoencoder.
+	Z.~T. thanks to Dr.~Xiaoqing Wang for
+	the discussion on self-supervised learning.
+
+	% ============================== %
+	\bibliographystyle{IEEEtran}
+	\bibliography{../../ref/ref}
+
+\end{document}
