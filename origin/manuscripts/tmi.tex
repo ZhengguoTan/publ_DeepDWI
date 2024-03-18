@@ -85,77 +85,99 @@
 	% ============================== %
 	\section{Introduction}
 	\label{SEC:INTRO}
-	\IEEEPARstart{H}{igh}-dimensional magnetic resonance imaging (HD-MRI),
-	referring to the acquisition, reconstruction, and analysis of
-	multi-dimensional imaging,
-    in contrast to single-contrast-weighted, static, and two-dimensional imaging.
-	Examples of HD-MRI include but are not limited to
-    magnetic resonance spectroscopic imaging (MRSI) \cite{brown_1982_mrsi},
-    diffusion-weighted imaging (DWI) \cite{lebihan_1986_diff},
-    and magnetic resonance fingerprinting (MRF) \cite{ma_2013_mrf}.
-    MRSI uses multiple readout gradients to acquire multiple echo images
-    for the computation of spatially resolved metabolic distribution.
-    DWI utilizes spatially and angularly varying
-    diffusion encoding gradients
-    to obtain multi-contrast diffusion-weighted images
-    as a probe into tissue microstructure.
-    MRF designs a $T_1$- and $T_2$-prepared pseudo-randomized sequence
-    to acquire time-resolved transient-state images,
-    which are matched with Bloch-equation generated dictionaries \cite{doneva_2010_moba}
+	\IEEEPARstart{H}{igh}-dimensional magnetic resonance imaging (HD-MRI)
+	has been an emerging and flourishing field,
+	which has achieved substantial improvements in terms of spatiotemporal fidelity.
+	Instead of the conventional two-dimensional static single-contrast-weighted imaging,
+	HD-MRI acquires and reconstructs multi-dimensional information.
+	For instance, Brown et al.~\cite{brown_1982_mrsi}
+	proposed magnetic resonance spectroscopic imaging (MRSI),
+	which uses multiple readout gradients to acquire multiple echo images
+	for the computation of spatially resolved metabolic distribution.
+	Le BiHan et al.~\cite{lebihan_1986_diff} proposed
+	diffusion-weighted imaging (DWI),
+	which utilizes spatially and angularly varying
+	diffusion encoding gradients in combination with
+	fast echo-planar imaging (EPI) readouts \cite{mansfield_1977_epi}
+	to obtain multi-contrast diffusion-weighted images
+	as a probe into tissue microstructure.
+	Ma et al.~\cite{ma_2013_mrf} proposed
+	magnetic resonance fingerprinting (MRF)
+	which consists of a $T_1$- and $T_2$-prepared pseudo-randomized sequence
+	to acquire time-resolved transient-state images
+	and a Bloch-equation-based dictionary matching algorithm \cite{doneva_2010_moba}
 	for simultaneous quantitative $T_1$ and $T_2$ mapping.
 
-	HD-MRI, however, conventionally requires long scan time
-	and high computational burden.
+	HD-MRI, however, conventionally requires long scan time.
 	Advances in parallel imaging
 	\cite{roemer_1990_pi,sodickson_1997_smash,
 	pruessmann_1999_sense,pruessmann_2001_gsense,griswold_2002_grappa}
 	and compressed sensing
 	\cite{lustig_2007_cs,block_2007_cs,liang_2007_psf}
-	have enabled accelerated acquisition for HD-MRI. For instance,
-	Lam et al.~\cite{lam_2014_spice} proposed SPectroscopic Imaging
-	by exploiting spatiospectral CorrElation (SPICE)
-	based on the low-rank modeling.
-	% Block et al.~\cite{block_2014_rad} and Feng et al.~\cite{feng_2014_grasp}
-	% proposed iterative golden-angle radial sparse parallel imaging (GRASP)
-	% with total variation regularization \cite{rudin_1992_tv} in the time domain,
-	% enabling robust free-breathing time-resolved abdominal imaging and
-	% breast dynamic contrast-enhanced imaging with reduced motion artifacts.
-	McGivney et al.~\cite{mcgivney_2014_svdmrf}
-	proposed the use of the singular value decomposition (SVD) and thresholding
-	to compress the MRF dictionary and to reduce the computational burden.
-	Further, Christodoulou et al.~\cite{christodoulou_2018_mt}
-	proposed MR Multitasking with higher-order SVD (HOSVD) modeling
-	and iterative reconstruction
-	for motion-resolved quantitative $T_1$ and $T_2$ mapping.
-    However, the use of patch-based SVD still requires long computational time.
+	have enabled accelerated acquisition for HD-MRI.
+	In particular, the low-rank modeling and regularization \cite{cai_2010_svt}
+	has been a powerful tool in reducing the dimensionality of high-dimensional data,
+	which enables accelerated acquisition and high spatiotemporal-resolution reconstruction.
+	Usually, singular value decomposition (SVD) is used to
+	learn a truncated temporal basis function from
+	a large-scale physics-informed dictionary
+	\cite{huang_2012_t2basis,lam_2014_spice,mcgivney_2014_svdmrf}.
+	The temporal basis function is then integrated
+	with the MRI forward model,
+	i.e.~the sensitivity encoding operator \cite{pruessmann_2001_gsense},
+	for joint reconstruction of the corresponding spatial basis images.
+	In addition, low-rank regularization can be added to the joint reconstruction
+	\cite{tamir_2017_t2shuffling}.
 
-	Beyond sparsity constraint and low-rank modeling,
-	advanced neural networks, e.g.~denoising autoencoder \cite{hinton_2006_ae},
-	have been explored for HD-MRI reconstruction.
-	Lam et al.~\cite{lam_2019_mrsi} proposed
-	to first learn a DAE model
-	from physics-informed simulated data
+	Beyond the low-rank technique,
+	advanced neural networks, e.g.~autoencoder \cite{hinton_2006_ae},
+	have been explored for HD-MRI reconstruction and
+	proven to supply more accurate representations of high-dimensional data than SVD.
+	Lam et al.~\cite{lam_2019_mrsi,mani_2021_qmodel} proposed
+	to first learn a denoising autoencoder (DAE) model
+	from a physics-informed simulated dictionary
 	and then incorporate the learned DAE model as a regularizer
 	in iterative reconstruction.
-	This concept was adopted by Mani et al.~\cite{mani_2021_qmodel}
-	for joint $k$-$q$-space DWI reconstruction using learned DAE \textit{priors}.
 	Further, Arefeen et al.~\cite{arefeen_2023_latent} proposed
 	to replace the conventional SVD-based linear subspace modeling
-    \cite{huang_2012_t2basis}
+	\cite{huang_2012_t2basis}
 	by the latent decoder model within DAE
-	for improved multi-$T_2$-weighted image reconstruction.
+	for improved $T_2$-weighted image reconstruction.
+	The capability of DAE to learn diffusion MRI models, however,
+	is open to questions.
+	DAE is composed of sequential fully connected layers
+	with nonlinear activation functions.
+	This simple architecture may fail to learn complicated functions.
+	DWI signal is such an example.
+	The standard diffusion tensor model \cite{basser_1994_dmri}
+	consists of six tensor elements,
+	and forms DWI signals based on the multiplication of exponential functions.
+	Moreover, DWI signals can be described with more complicated models,
+	e.g.~the ball-and-stick model \cite{behrens_2003_ballstick},
+	which involves even more parameters.
+
 	Besides learning a \textit{prior} based on simulated data
 	for regularization or latent space modeling,
 	Hammernik et al.~\cite{hammernik_2018_varnet} and
 	Aggarwal et al.~\cite{aggarwal_2018_modl}
 	proposed supervised learning unroll reconstruction networks,
-	which are trained by fully-sampled in vivo data.
+	which are trained by fully sampled in vivo data.
 	Yaman et al.~\cite{yaman_2020_ssdu,yaman_2022_zs}
 	proposed the self-supervised learning unroll network
-    without fully-sampled data,
+	without fully-sampled data,
 	which builds upon the concept of cross-validation in machine learning.
+	However, in the case of DWI,
+	it is rather challenging to acquire fully-sampled data
+	for the training of a regularization functional.
+	First, fully-sampled DWI requires a longer echo train in EPI,
+	which not only elongates the scan time
+	but also increases off-resonance-induced geometric distortion.
+	Second, there exists a wide range of diffusion modes,
+	thereby requiring a larger dataset than the two-dimensional imaging scenario.
 
-    The capability of DAE to learn diffusion MRI models, however, 
+	In this work, we aim to develop a generalized DWI reconstruction framework
+	with learned nonlinear latent space modeling and self-supervised reconstruction,
+	dubbed DeepDWI.
 
 
 
@@ -166,7 +188,7 @@
 	% ============================== %
 	\section{Methods}
 
-    \subsection{Learning a VAE}
+	\subsection{Learning a VAE}
 
 
 	% ============================== %
