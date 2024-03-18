@@ -1,8 +1,4 @@
-# Publication on
-
-```
-Diffusion-Weighted Imaging with Learned Nonlinear Latent Space Modeling and Self-Supervised Reconstruction (DeepDWI)
-```
+# Publication on DeepDWI
 
 
 ## Installation
