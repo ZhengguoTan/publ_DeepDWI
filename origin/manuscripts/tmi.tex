@@ -12,6 +12,11 @@
 \markboth{\journalname, VOL. XX, NO. XX, XXXX 2024}
 {Tan \MakeLowercase{\textit{et al.}}: DeepDWI}
 
+
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+
 \begin{document}
 	\title{Diffusion-Weighted Imaging with Learned Nonlinear Latent Space Modeling and Self-Supervised Reconstruction (DeepDWI)}
 
@@ -59,27 +64,14 @@
 
 	\maketitle
 
-	% 250 words
+	% Keep the abstract to 250 words or less.
 	\begin{abstract}
-		% These instructions provide guidelines for preparing papers for IEEE Transactions,
-		% but this version is specifically written to describe submission to IEEE TMI.
-		% Use this document as a template if you are using \LaTeX.
-		% Otherwise, use this document as an instruction set.
-		% The electronic file of your paper will be formatted further at IEEE.
-		% Paper titles should be written in uppercase and lowercase letters, not all uppercase.
-		% Avoid writing long formulas with subscripts in the title;
-		% short formulas that identify the elements are fine (e.g., "Nd--Fe--B").
-		% Keep the title short and do not write ``(Invited)'' in the title.
-		% Full names of authors are preferred in the author field, but are not required.
-		% Put a space between authors' initials. Only authors may appear in the author line
-		% of a manuscript. Authors are defined as individuals who have made an identifiable
-		% intellectual contribution to a manuscript to the extent that the individual can defend its contents.
 		% Define all symbols used in the abstract. Do not cite references in the abstract.
-		Keep the abstract to 250 words or less.
+		The code is publicly available at: \url{https://github.com/ZhengguoTan/DeepDWI}.
 	\end{abstract}
 
 	\begin{IEEEkeywords}
-	Diffusion-weighted imaging, Image reconstruction, Neural network, Latent space, Self-supervised learning
+	Diffusion-weighted imaging, Image reconstruction, Generative AI, Latent space, Self-supervised learning
 	\end{IEEEkeywords}
 
 	% ============================== %
@@ -126,14 +118,14 @@
 	with the MRI forward model,
 	i.e.~the sensitivity encoding operator \cite{pruessmann_2001_gsense},
 	for joint reconstruction of the corresponding spatial basis images.
-	In addition, low-rank regularization can be added to the joint reconstruction
+	In addition, low-rank regularization can be employed in the joint reconstruction
 	\cite{tamir_2017_t2shuffling}.
 
 	Beyond the low-rank technique,
 	advanced neural networks, e.g.~autoencoder \cite{hinton_2006_ae},
 	have been explored for HD-MRI reconstruction and
 	proven to supply more accurate representations of high-dimensional data than SVD.
-	Lam et al.~\cite{lam_2019_mrsi,mani_2021_qmodel} proposed
+	Lam et al.~\cite{lam_2019_mrsi} and Mani et al.~\cite{mani_2021_qmodel} proposed
 	to first learn a denoising autoencoder (DAE) model
 	from a physics-informed simulated dictionary
 	and then incorporate the learned DAE model as a regularizer
@@ -172,7 +164,7 @@
 	First, fully-sampled DWI requires a longer echo train in EPI,
 	which not only elongates the scan time
 	but also increases off-resonance-induced geometric distortion.
-	Second, there exists a wide range of diffusion modes,
+	Second, there exists a wide range of diffusion acquisition modes,
 	thereby requiring a larger dataset than the two-dimensional imaging scenario.
 
 	In this work, we aim to develop a generalized DWI reconstruction framework
@@ -180,19 +172,85 @@
 	dubbed DeepDWI.
 
 
-
 	% ============================== %
-	\section{Theory}
+	\section{Related Work}
+
+    \begin{figure*}
+		\centering
+		\includegraphics[width=\textwidth]{../figures/fig1.png}
+		\caption{\textbf{(A)} The architecture of a variational autoencoder.
+            \textbf{(B)} An illustration of the joint $k$-$q$-slice forward operator
+            for multi-band multi-shot DWI acquisition.}
+		\label{FIG:MODEL}
+	\end{figure*}
+
+    \subsection{Variational Autoencoder (VAE)}
+
+    \cref{FIG:MODEL} (A) illustrates the VAE model.
+    Pioneered by Kingma and Welling \cite{kingma_2014_vae},
+    VAE is a deep generative model,
+    which learns the true distribution of input training data $x$.
+    To achieve this, VAE
+
+    \subsection{Multi-Band Multi-Shot DWI Acquisition \& Modeling}
+
+    \cref{FIG:MODEL} (B) illustrates the joint $k$-$q$-slice forward forward operator
+    for multi-band multi-shot DWI acquisition \cite{tan_2024_naviepi}.
+    This operator can be understood as
+    an extended sensitivity encoding (SENSE) operator \cite{pruessmann_2001_gsense},
+    which maps the multi-slice multi-diffusion-weighted images ($\tilde{x}$)
+    to their corresponding $k$-space,
+    \begin{equation}
+        \mathcal{A}(\tilde{x}) = \mathbf{P \Sigma \Theta F S \Phi} \tilde{x}
+        \label{EQU:FWD}
+    \end{equation}
+    Here, the images $\tilde{x}$ are point-wise multiplied
+    with the pre-computed shot-to-shot phase variation maps ($\mathbf{\Phi}$)
+    and coil sensitivity maps ($\mathbf{S}$).
+    The output images are then converted to $k$-space
+    via two-dimensional fast Fourier transform ($\mathbf{F}$),
+    point-wise multiplied with the multi-band phases ($\mathbf{\Theta}$),
+    summed along the slice dimension ($\mathbf{\Sigma}$),
+    and then multiplied by the undersampling mask ($\mathbf{P}$).
+
+    With the operator $\mathcal{A}$, the inverse problem in DWI reads,
+    \begin{equation}
+        \argmin_{\tilde{x}} \norm{y - \mathcal{A}(\tilde{x})}_2^2 + \lambda \mathcal{R}(\tilde{x})
+        \label{EQU:INV}
+    \end{equation}
+    where $y$ is the measured $k$-space data,
+    and $\mathcal{R}(\hat{x})$ is the the regularization function
+    with the regularization strength $\lambda$.
+    When using the Tikhonov regularization,
+    i.e.~$\mathcal{R}(\tilde{x}) = \norm{\tilde{x}}_2^2$,
+    \cref{EQU:INV} can be solved via the conjugate gradient (CG) method.
+    When using non-smooth regularization functions,
+    e.g.~locally low rank (LLR) as in our previous work \cite{tan_2024_naviepi},
+    $\mathcal{R}(\tilde{x}) = \norm{T(\tilde{x})}_*$,
+    where singular value thresholding \cite{cai_2010_svt} is computed
+    to enforce low rankness in the spatial-diffusion matrices $T(\tilde{x})$,
+    the alternating direction method of multipliers (ADMM) \cite{boyd_2010_admm}
+    is used to solve \cref{EQU:INV}.
+
+
+    \subsection{Zero-Shot Self-Supervised Learning (ZSSSL)}
 
 
 	% ============================== %
 	\section{Methods}
 
-	\subsection{Learning a VAE}
 
 
 	% ============================== %
 	\section{Results}
+
+	\subsection{VAE enables robust \& accurate learning of DWI signal}
+
+	\subsection{Zero-shot learning enables motion-robust DWI}
+
+	\subsection{Zero-shot learning: model generalization}
+
+	\subsection{VAE modeling with zero-shot learning reconstruction}
 
 
 	% ============================== %
