@@ -180,7 +180,12 @@
 		\includegraphics[width=\textwidth]{../figures/fig1.png}
 		\caption{\textbf{(A)} The architecture of a variational autoencoder.
             \textbf{(B)} An illustration of the joint $k$-$q$-slice forward operator
-            for multi-band multi-shot DWI acquisition.}
+            for multi-band multi-shot DWI acquisition.
+            $[x, y, z, q]$ denotes the shape of input DWI ($\mathbf{\tilde{x}}$),
+            with $x$ and $y$ as the image size, $z$ as the number of slices,
+            and $q$ as the number of diffusion encodings.
+            The operator outputs multi-dimensional $k$-space with the shape $[x, y, 1, c, q, s]$,
+            with $c$ as the number of receiver coils, $s$ as the number of shots.}
 		\label{FIG:MODEL}
 	\end{figure*}
 
@@ -198,13 +203,13 @@
     for multi-band multi-shot DWI acquisition \cite{tan_2024_naviepi}.
     This operator can be understood as
     an extended sensitivity encoding (SENSE) operator \cite{pruessmann_2001_gsense},
-    which maps the multi-slice multi-diffusion-weighted images ($\tilde{x}$)
+    which maps the multi-slice multi-diffusion-weighted images ($\mathbf{\tilde{x}}$)
     to their corresponding $k$-space,
     \begin{equation}
-        \mathcal{A}(\tilde{x}) = \mathbf{P \Sigma \Theta F S \Phi} \tilde{x}
+        \mathcal{A}(\mathbf{\tilde{x}}) = \mathbf{P \Sigma \Theta F S \Phi} \mathbf{\tilde{x}}
         \label{EQU:FWD}
     \end{equation}
-    Here, the images $\tilde{x}$ are point-wise multiplied
+    Here, the images $\mathbf{\tilde{x}}$ are point-wise multiplied
     with the pre-computed shot-to-shot phase variation maps ($\mathbf{\Phi}$)
     and coil sensitivity maps ($\mathbf{S}$).
     The output images are then converted to $k$-space
@@ -215,20 +220,20 @@
 
     With the operator $\mathcal{A}$, the inverse problem in DWI reads,
     \begin{equation}
-        \argmin_{\tilde{x}} \norm{y - \mathcal{A}(\tilde{x})}_2^2 + \lambda \mathcal{R}(\tilde{x})
+        \argmin_{\mathbf{\tilde{x}}} \norm{\mathbf{y} - \mathcal{A}(\mathbf{\tilde{x}})}_2^2 + \lambda \mathcal{R}(\mathbf{\tilde{x}})
         \label{EQU:INV}
     \end{equation}
-    where $y$ is the measured $k$-space data,
+    where $\mathbf{y}$ is the measured $k$-space data,
     and $\mathcal{R}(\hat{x})$ is the the regularization function
     with the regularization strength $\lambda$.
     When using the Tikhonov regularization,
-    i.e.~$\mathcal{R}(\tilde{x}) = \norm{\tilde{x}}_2^2$,
+    i.e.~$\mathcal{R}(\mathbf{\tilde{x}}) = \norm{\mathbf{\tilde{x}}}_2^2$,
     \cref{EQU:INV} can be solved via the conjugate gradient (CG) method.
     When using non-smooth regularization functions,
     e.g.~locally low rank (LLR) as in our previous work \cite{tan_2024_naviepi},
-    $\mathcal{R}(\tilde{x}) = \norm{T(\tilde{x})}_*$,
+    $\mathcal{R}(\mathbf{\tilde{x}}) = \norm{T(\mathbf{\tilde{x}})}_*$,
     where singular value thresholding \cite{cai_2010_svt} is computed
-    to enforce low rankness in the spatial-diffusion matrices $T(\tilde{x})$,
+    to enforce low rankness in the spatial-diffusion matrices $T(\mathbf{\tilde{x}})$,
     the alternating direction method of multipliers (ADMM) \cite{boyd_2010_admm}
     is used to solve \cref{EQU:INV}.
 
