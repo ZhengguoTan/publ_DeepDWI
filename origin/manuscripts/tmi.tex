@@ -5,8 +5,17 @@
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
+
+\usepackage{xcolor}
+
+\makeatletter
+\let\NAT@parse\undefined
+\makeatother
 \usepackage{hyperref}
+
 \usepackage[capitalise,noabbrev]{cleveref}
+
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 	T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \markboth{\journalname, VOL. XX, NO. XX, XXXX 2024}
@@ -36,7 +45,7 @@
 			NHR is funded by federal and Bavarian state authorities.
 			NHR@FAU hardware is partially funded by
 			DFG under project 440719683.}
-		\thanks{Z.~T. was with the Department
+		\thanks{Z.~Tan was with the Department
 			Artificial Intelligence in Biomedical Engineering (AIBE),
 			FAU, Erlangen, Germany.
 			He is now with
@@ -45,19 +54,22 @@
 			Department of Radiology,
 			University of Michigan, Ann Arbor, MI 48109 USA
 			(e-mail: zgtan@med.umich.edu).}
-		\thanks{J.~G. is with the Department Medical Engineering,
+		\thanks{J.~Glaser was with the Department of Medical Engineering,
+			FAU, Erlangen, Germany.
+			He is now with the Institute of Radiology,
+			University Hospital Erlangen,
 			FAU, Erlangen, Germany
 			(e-mail: julius.glaser@fau.de).}
-		\thanks{P.~A.~L. is with Siemens Healthcare GmbH, Erlangen, Germany
+		\thanks{P.~A.~Liebig is with Siemens Healthcare GmbH, Erlangen, Germany
 			(e-mail: patrick.liebig@siemens-healthineers.com).}
-		\thanks{A.~H. is with the Department AIBE,
+		\thanks{A.~Hofmann is with the Department AIBE,
 			FAU, Erlangen, Germany
 			(e-mail: annika.ah.hofmann@fau.de).}
-		\thanks{F.~B.~L. is with the Institute of Radiology,
+		\thanks{F.~B.~Laun is with the Institute of Radiology,
 			University Hospital Erlangen,
 			FAU, Erlangen, Germany
 			(e-mail: Frederik.Laun@uk-erlangen.de).}
-		\thanks{F.~K. is with the Department AIBE,
+		\thanks{F.~Knoll is with the Department AIBE,
 			FAU, Erlangen, Germany
 			(e-mail: florian.knoll@fau.de).}
 	}
@@ -86,7 +98,8 @@
 	proposed magnetic resonance spectroscopic imaging (MRSI),
 	which uses multiple readout gradients to acquire multiple echo images
 	for the computation of spatially resolved metabolic distribution.
-	Le BiHan et al.~\cite{lebihan_1986_diff} proposed
+	Le BiHan et al.~\cite{lebihan_1986_diff} and
+	Merboldt et al.~\cite{merboldt_1985_diff} proposed
 	diffusion-weighted imaging (DWI),
 	which utilizes spatially and angularly varying
 	diffusion encoding gradients in combination with
@@ -124,18 +137,50 @@
 	Beyond the low-rank technique,
 	advanced neural networks, e.g.~autoencoder \cite{hinton_2006_ae},
 	have been explored for HD-MRI reconstruction and
-	proven to supply more accurate representations of high-dimensional data than SVD.
-	Lam et al.~\cite{lam_2019_mrsi} and Mani et al.~\cite{mani_2021_qmodel} proposed
-	to first learn a denoising autoencoder (DAE) model
+	proven to supply more accurate representations of
+	high-dimensional data than SVD.
+	Lam et al.~\cite{lam_2019_mrsi} and Mani et al.~\cite{mani_2021_qmodel}
+	proposed to first learn a denoising autoencoder (DAE) model
 	from a physics-informed simulated dictionary
 	and then incorporate the learned DAE model as a regularizer
-	in iterative reconstruction.
-	Further, Arefeen et al.~\cite{arefeen_2023_latent} proposed
+	in the alternating direction method of multipliers (ADMM)
+	\cite{boyd_2010_admm}
+	unrolling reconstruction.
+	Pioneered by Gregor and LeCun \cite{gregor_2010_algunroll},
+	algorithm unrolling enables the use of learned deep \textit{prior}
+	as regularization and faster inference than
+	iterative reconstruction with hand-crafted regularization functions
+	\cite{monga_2021_algunroll}.
+	Algorithm unrolling has been introduced to
+	accelerated MRI reconstruction and
+	employed in various scenarios:
+	supervised learning with fully sampled reference images
+	\cite{hammernik_2018_varnet,aggarwal_2018_modl},
+	self-supervised learning
+	with only undersampled data available for training
+	\cite{yaman_2020_ssdu,yaman_2022_zs}.
+
+	Deep neural networks are capable of learning
+	not only regularization functions,
+	but also MR-physics forward operators.
+	Zhu et al.~\cite{zhu_2018_automap} proposed
+	the automated transform by manifold approximation (AUTOMAP),
+	which learns the mapping between the sensor and the image domain
+	for data-driven supervised image reconstruction.
+	Liu et al.~\cite{liu_2021_relax} proposed
+	the reference-free $T_1$ parameter maps extraction (RELAX)
+	self-supervised deep learning reconstruction,
+	which learns the mapping from $T_1$ parameter maps to
+	undersampled multi-coil multi-contrast $k$-space data.
+	Arefeen et al.~\cite{arefeen_2023_latent} proposed
 	to replace the conventional SVD-based linear subspace modeling
 	\cite{huang_2012_t2basis}
 	by the latent decoder model within DAE
 	for improved $T_2$-weighted image reconstruction.
-	The capability of DAE to learn diffusion MRI models, however,
+
+	Several challenges exist when adopting deep learning to
+	DWI reconstruction.
+	First, the capability of DAE to learn diffusion MRI models
 	is open to questions.
 	DAE is composed of sequential fully connected layers
 	with nonlinear activation functions.
@@ -143,102 +188,112 @@
 	DWI signal is such an example.
 	The standard diffusion tensor model \cite{basser_1994_dmri}
 	consists of six tensor elements,
-	and forms DWI signals based on the multiplication of exponential functions.
-	Moreover, DWI signals can be described with more complicated models,
-	e.g.~the ball-and-stick model \cite{behrens_2003_ballstick},
-	which involves even more parameters.
-
-	Besides learning a \textit{prior} based on simulated data
-	for regularization or latent space modeling,
-	Hammernik et al.~\cite{hammernik_2018_varnet} and
-	Aggarwal et al.~\cite{aggarwal_2018_modl}
-	proposed supervised learning unroll reconstruction networks,
-	which are trained by fully sampled in vivo data.
-	Yaman et al.~\cite{yaman_2020_ssdu,yaman_2022_zs}
-	proposed the self-supervised learning unroll network
-	without fully-sampled data,
-	which builds upon the concept of cross-validation in machine learning.
-	However, in the case of DWI,
-	it is rather challenging to acquire fully-sampled data
+	and forms DWI signals based on
+	the multiplication of exponential functions.
+	Second, it is rather difficult to acquire fully-sampled data
 	for the training of a regularization functional.
-	First, fully-sampled DWI requires a longer echo train in EPI,
+	On the one side,
+	fully sampled DWI requires a longer echo train in EPI,
 	which not only elongates the scan time
 	but also increases off-resonance-induced geometric distortion.
-	Second, there exists a wide range of diffusion acquisition modes,
-	thereby requiring a larger dataset than the two-dimensional imaging scenario.
+	On the other side,
+	there exists a wide range of diffusion acquisition modes,
+	thereby requiring a larger dataset than
+	the two-dimensional imaging scenario.
+	% Moreover, DWI signals can be described with more complicated models,
+	% e.g.~the ball-and-stick model \cite{behrens_2003_ballstick},
+	% which involves even more parameters.
 
-	In this work, we aim to develop a generalized DWI reconstruction framework
-	with learned nonlinear latent space modeling and self-supervised reconstruction,
+	To overcome these challenges,
+	we aim to develop a generalized DWI reconstruction framework
+	with learned nonlinear latent space modeling and
+	self-supervised reconstruction,
 	dubbed DeepDWI.
 
 
 	% ============================== %
 	\section{Related Work}
 
-    \begin{figure*}
+	\begin{figure*}
 		\centering
 		\includegraphics[width=\textwidth]{../figures/fig1.png}
 		\caption{\textbf{(A)} The architecture of a variational autoencoder.
-            \textbf{(B)} An illustration of the joint $k$-$q$-slice forward operator
-            for multi-band multi-shot DWI acquisition.
-            $[x, y, z, q]$ denotes the shape of input DWI ($\mathbf{\tilde{x}}$),
-            with $x$ and $y$ as the image size, $z$ as the number of slices,
-            and $q$ as the number of diffusion encodings.
-            The operator outputs multi-dimensional $k$-space with the shape $[x, y, 1, c, q, s]$,
-            with $c$ as the number of receiver coils, $s$ as the number of shots.}
+			\textbf{(B)} An illustration of the joint $k$-$q$-slice forward operator
+			for multi-band multi-shot DWI acquisition.
+			$[x, y, z, q]$ denotes the shape of input DWI ($\mathbf{\tilde{x}}$),
+			with $x$ and $y$ as the image size, $z$ as the number of slices,
+			and $q$ as the number of diffusion encodings.
+			The operator outputs multi-dimensional $k$-space with the shape $[x, y, 1, c, q, s]$,
+			with $c$ as the number of receiver coils, $s$ as the number of shots.}
 		\label{FIG:MODEL}
 	\end{figure*}
 
-    \subsection{Variational Autoencoder (VAE)}
+	\subsection{Variational Autoencoder (VAE)}
 
-    \cref{FIG:MODEL} (A) illustrates the VAE model.
-    Pioneered by Kingma and Welling \cite{kingma_2014_vae},
-    VAE is a deep generative model,
-    which learns the true distribution of input training data $x$.
-    To achieve this, VAE
+	\cref{FIG:MODEL} (A) illustrates the VAE model.
+	Pioneered by Kingma and Welling \cite{kingma_2014_vae},
+	VAE is a deep generative model,
+	which learns the true distribution of input training data $x$.
+	To achieve this, VAE
 
-    \subsection{Multi-Band Multi-Shot DWI Acquisition \& Modeling}
+	\subsection{Multi-Band Multi-Shot DWI Acquisition \& Modeling}
 
-    \cref{FIG:MODEL} (B) illustrates the joint $k$-$q$-slice forward forward operator
-    for multi-band multi-shot DWI acquisition \cite{tan_2024_naviepi}.
-    This operator can be understood as
-    an extended sensitivity encoding (SENSE) operator \cite{pruessmann_2001_gsense},
-    which maps the multi-slice multi-diffusion-weighted images ($\mathbf{\tilde{x}}$)
-    to their corresponding $k$-space,
-    \begin{equation}
-        \mathcal{A}(\mathbf{\tilde{x}}) = \mathbf{P \Sigma \Theta F S \Phi} \mathbf{\tilde{x}}
-        \label{EQU:FWD}
-    \end{equation}
-    Here, the images $\mathbf{\tilde{x}}$ are point-wise multiplied
-    with the pre-computed shot-to-shot phase variation maps ($\mathbf{\Phi}$)
-    and coil sensitivity maps ($\mathbf{S}$).
-    The output images are then converted to $k$-space
-    via two-dimensional fast Fourier transform ($\mathbf{F}$),
-    point-wise multiplied with the multi-band phases ($\mathbf{\Theta}$),
-    summed along the slice dimension ($\mathbf{\Sigma}$),
-    and then multiplied by the undersampling mask ($\mathbf{P}$).
+	\cref{FIG:MODEL} (B) illustrates the joint $k$-$q$-slice forward forward operator
+	for multi-band multi-shot DWI acquisition \cite{tan_2024_naviepi}.
+	This operator can be understood as
+	an extended sensitivity encoding (SENSE) operator \cite{pruessmann_2001_gsense},
+	which maps the multi-slice multi-diffusion-weighted images ($\mathbf{\tilde{x}}$)
+	to their corresponding $k$-space,
+	\begin{equation}
+		\mathcal{A}(\mathbf{\tilde{x}}) = \mathbf{P \Sigma \Theta F S \Phi} \mathbf{\tilde{x}}
+		\label{EQU:FWD}
+	\end{equation}
+	Here, the images $\mathbf{\tilde{x}}$ are point-wise multiplied
+	with the pre-computed shot-to-shot phase variation maps ($\mathbf{\Phi}$)
+	and coil sensitivity maps ($\mathbf{S}$).
+	The output images are then converted to $k$-space
+	via two-dimensional fast Fourier transform ($\mathbf{F}$),
+	point-wise multiplied with the multi-band phases ($\mathbf{\Theta}$),
+	summed along the slice dimension ($\mathbf{\Sigma}$),
+	and then multiplied by the undersampling mask ($\mathbf{P}$).
 
-    With the operator $\mathcal{A}$, the inverse problem in DWI reads,
-    \begin{equation}
-        \argmin_{\mathbf{\tilde{x}}} \norm{\mathbf{y} - \mathcal{A}(\mathbf{\tilde{x}})}_2^2 + \lambda \mathcal{R}(\mathbf{\tilde{x}})
-        \label{EQU:INV}
-    \end{equation}
-    where $\mathbf{y}$ is the measured $k$-space data,
-    and $\mathcal{R}(\hat{x})$ is the the regularization function
-    with the regularization strength $\lambda$.
-    When using the Tikhonov regularization,
-    i.e.~$\mathcal{R}(\mathbf{\tilde{x}}) = \norm{\mathbf{\tilde{x}}}_2^2$,
-    \cref{EQU:INV} can be solved via the conjugate gradient (CG) method.
-    When using non-smooth regularization functions,
-    e.g.~locally low rank (LLR) as in our previous work \cite{tan_2024_naviepi},
-    $\mathcal{R}(\mathbf{\tilde{x}}) = \norm{T(\mathbf{\tilde{x}})}_*$,
-    where singular value thresholding \cite{cai_2010_svt} is computed
-    to enforce low rankness in the spatial-diffusion matrices $T(\mathbf{\tilde{x}})$,
-    the alternating direction method of multipliers (ADMM) \cite{boyd_2010_admm}
-    is used to solve \cref{EQU:INV}.
+	With the operator $\mathcal{A}$, the inverse problem in DWI reads,
+	\begin{equation}
+		\argmin_{\mathbf{\tilde{x}}} \norm{\mathbf{y} - \mathcal{A}(\mathbf{\tilde{x}})}_2^2 + \lambda \mathcal{R}(\mathbf{\tilde{x}})
+		\label{EQU:INV}
+	\end{equation}
+	where $\mathbf{y}$ is the measured $k$-space data,
+	and $\mathcal{R}(\hat{x})$ is the the regularization function
+	with the regularization strength $\lambda$.
+	When using the Tikhonov regularization,
+	i.e.~$\mathcal{R}(\mathbf{\tilde{x}}) = \norm{\mathbf{\tilde{x}}}_2^2$,
+	\cref{EQU:INV} can be solved via the conjugate gradient (CG) method.
 
 
-    \subsection{Zero-Shot Self-Supervised Learning (ZSSSL)}
+	\subsection{Algorithm Unrolling for Image Reconstruction}
+
+	The regularization function in \cref{EQU:INV} can be nonlinear,
+	e.g.~the sparsity \cite{lustig_2007_cs} or the low-rankness \cite{liang_2007_psf} constraint.
+	In this scenario, algorithms such as
+	the fast iterative shrinkage thresholding (FISTA) \cite{beck_2009_fista}
+	and the alternating direction method of multipliers (ADMM) \cite{boyd_2010_admm}
+	are often employed.
+	These algorithms consist of a substep that transforms $\mathbf{\tilde{x}}$
+	to a sparsifying domain or a specialized matrix format
+	(e.g., the spatial-diffusion matrix in our previous work \cite{tan_2024_naviepi})
+	and then performs nonlinear thresholding to promote sparsity or low-rankness.
+	This substep shares similarities to deep neural networks,
+	and inspires the seminal work on algorithm unrolling
+	by Gregor and LeCun \cite{gregor_2010_algunroll}.
+	Instead of a hand-crafted regularization function,
+	algorithm unrolling learns deep \textit{prior}
+	via the use of deep neural networks as the regularization function.
+	This enables the learning of true image \textit{prior} during the training process
+	and much faster inference than iterative reconstruction with hand-crafted regularization functions.
+	An excellent review of algorithm unrolling
+	has been provided by Monga et al.~\cite{monga_2021_algunroll}.
+
+	In the area of image reconstruction for accelerated MRI,
 
 
 	% ============================== %
