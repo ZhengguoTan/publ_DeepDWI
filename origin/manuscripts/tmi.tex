@@ -230,11 +230,22 @@
 
 	\subsection{Variational Autoencoder (VAE)}
 
-	\cref{FIG:MODEL} (A) illustrates the VAE model.
-	Pioneered by Kingma and Welling \cite{kingma_2014_vae},
-	VAE is a deep generative model,
-	which learns the true distribution of input training data $x$.
-	To achieve this, VAE
+	Autoencoders (AEs) are neural network type trained in an unsupervised manner. 
+	They utilize two smaller networks an encoder and a decoder, connected through a latent space. 
+	The trained encoder acts as a dimensionality reducer, producing a compact sparse representation of the data in the latent space.
+	The decoder is trained to reconstruction the input data from the encoder produced latent representation. 
+	Because the the standard AE training scheme does not constrain the latent space in any way, the network has problems to generalize.
+	The Variational Autoencoder (VAE) was first introduced by Kingma and Welling \cite{kingma_2014_vae} and uses the principle of variational inference. 
+	By that the VAE is forced to learn the probability distributions of the latent variables and a second term is 
+	added to the loss function of the network, the result of the Kullbeck Leibler Divergence, which describes how much the 
+	learned latent distributions diverge from the real distributions by that regularizing the reconstruction training. 
+	The latent space in VAE is not consisting of simple neurons but 
+	resambles distributions of the latent activations and samples from these. 
+	The sampling operation is not backpropagateable, however, 
+	so the network makes use of the reparameterization trick - 
+	the VAE learns a mean and a variance for each latent variable 
+	and these are used to scale the drawn samples from a gaussian distribution (mean=0, variance=1).
+	In \cref{FIG:MODEL} (A) the used VAE model is shown.
 
 	\subsection{Multi-Band Multi-Shot DWI Acquisition \& Modeling}
 
