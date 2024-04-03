@@ -273,8 +273,9 @@
 		\argmin_{\mathbf{\tilde{x}}} \norm{\mathbf{y} - \mathcal{A}(\mathbf{\tilde{x}})}_2^2 + \lambda \mathcal{R}(\mathbf{\tilde{x}})
 		\label{EQU:INV}
 	\end{equation}
-	where $\mathbf{y}$ is the measured $k$-space data,
-	and $\mathcal{R}(\hat{x})$ is the the regularization function
+	where $\mathbf{y}$ is the measured $k$-space data.
+    The first term in \cref{EQU:INV} presents data consistency, and
+    the second term presents the regularization function $\mathcal{R}(\tilde{x})$
 	with the regularization strength $\lambda$.
 	When using the Tikhonov regularization,
 	i.e.~$\mathcal{R}(\mathbf{\tilde{x}}) = \norm{\mathbf{\tilde{x}}}_2^2$,
@@ -283,28 +284,108 @@
 
 	\subsection{Algorithm Unrolling for Image Reconstruction}
 
-	The regularization function in \cref{EQU:INV} can be nonlinear,
-	e.g.~the sparsity \cite{lustig_2007_cs} or the low-rankness \cite{liang_2007_psf} constraint.
-	In this scenario, algorithms such as
-	the fast iterative shrinkage thresholding (FISTA) \cite{beck_2009_fista}
-	and the alternating direction method of multipliers (ADMM) \cite{boyd_2010_admm}
-	are often employed.
-	These algorithms consist of a substep that transforms $\mathbf{\tilde{x}}$
-	to a sparsifying domain or a specialized matrix format
-	(e.g., the spatial-diffusion matrix in our previous work \cite{tan_2024_naviepi})
-	and then performs nonlinear thresholding to promote sparsity or low-rankness.
-	This substep shares similarities to deep neural networks,
-	and inspires the seminal work on algorithm unrolling
-	by Gregor and LeCun \cite{gregor_2010_algunroll}.
-	Instead of a hand-crafted regularization function,
-	algorithm unrolling learns deep \textit{prior}
-	via the use of deep neural networks as the regularization function.
-	This enables the learning of true image \textit{prior} during the training process
-	and much faster inference than iterative reconstruction with hand-crafted regularization functions.
-	An excellent review of algorithm unrolling
-	has been provided by Monga et al.~\cite{monga_2021_algunroll}.
+    % Algorithm unrolling has been an emerging technique
+    % in solving \cref{EQU:INV}, which consists of two ingredients.
+    % First, algorithm unrolling learns a regularization function
+    % via deep neural networks.
+    % Second, algorithm unrolling is constrained
+    % by the data-consistency term,
+    % i.e., the forward pass of the estimate $\mathcal{A} (\mathbf{\tilde{x}})$
+    % must be close to the measured data $\mathbf{y}$.
 
-	In the area of image reconstruction for accelerated MRI,
+    Similar to conventional optimization algorithms,
+    algorithm unrolling requires iterative procedures
+    to solve \cref{EQU:INV}. In MRI image reconstruction,
+    two algorithm unrolling approaches have been proposed.
+    The first one is known as the variational network (VarNet)
+    \cite{hammernik_2018_varnet}, whose update rule reads
+    \begin{equation} \label{EQU:VarNet_Upd}
+        \left\{\begin{aligned}
+            \mathbf{z}^{(k)} &= \mathbf{\tilde{x}}^{(k)} - \lambda \cdot \mathcal{A}^H \Big( \mathcal{A} (\mathbf{\tilde{x}}^{(k)}) - \mathbf{y} \Big) \\
+            \mathbf{\tilde{x}}^{(k+1)} &= \mathbf{z}^{(k)} - \mathcal{N}_{\theta}^{(k)} (\mathbf{z}^{(k)})
+        \end{aligned}\right.
+    \end{equation}
+    with $k$ being the iteration step.
+    To learn the parameters $\theta$ and the gradient step size $\lambda$,
+    the loss function in VarNet is given as
+    \begin{equation}
+        \argmin_{(\theta^{(1)}, \ldots, \theta^{(K)}, \lambda)} \mathcal{L} (\mathbf{x}_{\text{ref}}, \mathbf{\tilde{x}}^{(K)}) = \norm{\mathbf{\tilde{x}}^{(K)} - \mathbf{x}_{\text{ref}}}_2^2
+        \label{EQU:VarNet_Loss}
+    \end{equation}
+    where $\mathbf{\tilde{x}}^{(K)}$ is the estimate after $K$ iterations,
+    and $\mathbf{x}_{\text{ref}}$ denotes fully-sampled reference images.
+    Here, the neural network parameters $\theta$
+    differ among iterations.
+
+    The second algorithm unrolling in MRI is known as
+    Model-based deep learning architecture for inverse problems (MoDL)
+    \cite{aggarwal_2018_modl},
+    which tends to learn a denoising neural network,
+    and redefines \cref{EQU:INV} as
+    \begin{equation}
+		\argmin_{\mathbf{\tilde{x}}} \norm{\mathbf{y} - \mathcal{A}(\mathbf{\tilde{x}})}_2^2 + \lambda \norm{ \mathbf{\tilde{x}} - \mathcal{D}_{\omega}(\mathbf{\tilde{x}}) }_2^2
+		\label{EQU:DINV}
+	\end{equation}
+    Instead of the VarNet update rule in \cref{EQU:VarNet_Upd},
+    MoDL employs the alternating minimization scheme,
+    \begin{equation} \label{EQU:MoDL_Upd}
+        \left\{\begin{aligned}
+            \mathbf{z}^{(k)} &= \mathcal{D}_{\omega} (\mathbf{\tilde{x}}^{(k)}) \\
+            \mathbf{\tilde{x}}^{(k+1)} &= \argmin_{\mathbf{x}} \norm{\mathbf{y} - \mathcal{A}(\mathbf{x})}_2^2 + \lambda \norm{ \mathbf{x} - \mathbf{z}^{(k)} }_2^2
+        \end{aligned}\right.
+    \end{equation}
+    where the second minimization problem is solved by CG.
+    MoDL shares weights among iterations, and thus the loss function reduces to
+    only one set of model parameters.
+    Both VarNet and MoDL require reference images,
+    and thus fall into the category of supervised learning.
+
+    In practice, it is challenging to acquire fully-sampled reference images.
+    To enable deep neural network training without fully sampled reference data,
+    Yaman et al.~\cite{yaman_2020_ssdu} proposed self-supervised learning via data undersampling (SSDU).
+    In SSDU, the undersampled data is partitioned into two disjoint sets,
+    one for the data-consistency term, and another for the loss function calculation.
+    Thus, the sampling mask $\mathbf{P}$ splits,
+    \begin{equation}
+        \mathbf{P} = \Theta ~\cup~ \Lambda
+    \end{equation}
+    SSDU follows the alternating update scheme in MoDL,
+    and such a splitting leads to two modifications in training.
+    First, the $k$-space data and the forward model in \cref{EQU:MoDL_Upd} is masked as
+    $\mathbf{y}_{\Theta}$ and $\mathcal{A}_{\Theta}$, respectively.
+    Second, the loss function is computed in $k$-space,
+    \begin{equation}
+        \argmin_{(\theta, \lambda)} \mathcal{L} (\mathbf{y}_{\Lambda}, \mathcal{A}_{\Lambda}(\mathbf{\tilde{x}}^{(K)}))
+        \label{EQU:SSDU_Loss}
+    \end{equation}
+    where a normalized $\ell_1$-$\ell_2$ loss is used \cite{yaman_2020_ssdu}.
+    Further, Yaman et al.~\cite{yaman_2022_zs} proposed subject-specific zero-shot learning,
+    where one single scan data is partitioned into three disjoint sets,
+    two used to enforce data consistency and to update loss,
+    and the last served as self-validation to allow for early stopping.
+
+	% The regularization function in \cref{EQU:INV} can be nonlinear,
+	% e.g.~the sparsity \cite{lustig_2007_cs} or the low-rankness \cite{liang_2007_psf} constraint.
+	% In this scenario, algorithms such as
+	% the fast iterative shrinkage thresholding (FISTA) \cite{beck_2009_fista}
+	% and the alternating direction method of multipliers (ADMM) \cite{boyd_2010_admm}
+	% are often employed.
+	% These algorithms consist of a substep that transforms $\mathbf{\tilde{x}}$
+	% to a sparsifying domain or a specialized matrix format
+	% (e.g., the spatial-diffusion matrix in our previous work \cite{tan_2024_naviepi})
+	% and then performs nonlinear thresholding to promote sparsity or low-rankness.
+	% This substep shares similarities to deep neural networks,
+	% and inspires the seminal work on algorithm unrolling
+	% by Gregor and LeCun \cite{gregor_2010_algunroll}.
+	% Instead of a hand-crafted regularization function,
+	% algorithm unrolling learns deep \textit{prior}
+	% via the use of deep neural networks as the regularization function.
+	% This enables the learning of true image \textit{prior} during the training process
+	% and much faster inference than iterative reconstruction with hand-crafted regularization functions.
+	% An excellent review of algorithm unrolling
+	% has been provided by Monga et al.~\cite{monga_2021_algunroll}.
+
+	% In the area of image reconstruction for accelerated MRI,
 
 
 	% ============================== %
@@ -335,9 +416,9 @@
 	% ============================== %
 	\section*{Acknowledgment}
 
-	Z.~T. thanks to Ms.~Soundarya Soundarresan for
-	her work and discussion on denoising autoencoder.
-	Z.~T. thanks to Dr.~Xiaoqing Wang for
+	Z.~Tan thanks to Ms.~Soundarya Soundarresan for
+	her work and discussion on denoising autoencoder,
+	and to Dr.~Xiaoqing Wang for
 	the discussion on self-supervised learning.
 
 	% ============================== %
