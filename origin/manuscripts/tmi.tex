@@ -3,7 +3,8 @@
 \usepackage{booktabs}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{graphicx}
 \usepackage{siunitx}
 \usepackage{textcomp}
@@ -35,9 +36,9 @@
 % Blackbox is not in favor
 
 \begin{document}
-	\title{High-Resolution Diffusion-Weighted Imaging with Self-Gated Zero-Shot Self-Supervised Reconstruction}
+	\title{High-Resolution Motion-Robust Diffusion-Weighted Imaging with Self-Gated Zero-Shot Self-Supervised Reconstruction}
 
-	\author{Zhengguo Tan, Julius Glaser, Patrick A Liebig, Annika Hofmann, Frederik B Laun, Florian Knoll
+	\author{Zhengguo Tan, Patrick A Liebig, Annika Hofmann, Frederik B Laun, Florian Knoll
 		\thanks{This work was supported in part by
 			German Research Foundation (DFG)
 			under projects 513220538 and 512819079,
@@ -62,12 +63,12 @@
 			Department of Radiology,
 			University of Michigan, Ann Arbor, MI 48109 USA
 			(e-mail: zgtan@med.umich.edu).}
-		\thanks{J.~Glaser was with the Department of Medical Engineering,
-			FAU, Erlangen, Germany.
-			He is now with the Institute of Radiology,
-			University Hospital Erlangen,
-			FAU, Erlangen, Germany
-			(e-mail: julius.glaser@fau.de).}
+%		\thanks{J.~Glaser was with the Department of Medical Engineering,
+%			FAU, Erlangen, Germany.
+%			He is now with the Institute of Radiology,
+%			University Hospital Erlangen,
+%			FAU, Erlangen, Germany
+%			(e-mail: julius.glaser@fau.de).}
 		\thanks{P.~A.~Liebig is with Siemens Healthcare GmbH, Erlangen, Germany
 			(e-mail: patrick.liebig@siemens-healthineers.com).}
 		\thanks{A.~Hofmann is with the Department AIBE,
@@ -86,7 +87,13 @@
 
 	% Keep the abstract to 250 words or less.
 	\begin{abstract}
-		This work developed a self-gated zero-shot self-supervised learning (ZSSSL) reconstruction framework for navigator-free high-resolution diffusion-weighted imaging with undersampled multi-shot interleaved echo-planar imaging (iEPI) acquisition. ZSSSL belongs to algorithm unrolling with physics-guided data-consistency term and a learned regularization function. We unrolled the alternating direction method of multipliers (ADMM) with a residual neural network to explore the spatial-diffusion-dimension redundancy. First, we compared the proposed self-gated ZSSSL to conventional methods including parallel imaging as multiplexed sensitivity-encoding (MUSE), compressed sensing reconstruction with locally-low rank (LLR) regularization, and variational autoencoder (VAE) regularized reconstruction. ZSSSL supplied excellent reconstruction results in both 4-shot fully-sampled data and 2-shot undersampled data at 1.0 mm isotropic resolution. Second, self-gated ZSSSL was validated with both retrospectively and prospectively acquired data at 0.7 mm isotropic resolution. This approach outperformed both MUSE and LLR regularized reconstruction in terms of image sharpness and motion robustness. Although ZSSSL required up to 8 hours training time per slice, it is generalized to all other slices and its inference time was only 1 minute. Note that LLR required about 2 hours per slice. Overall, self-gated ZSSSL enables undersampled multi-shot iEPI acquisition without the need of navigators and offers sub-millimeter DWI at clinically feasible reconstruction time. The code is publicly available at: \url{https://github.com/ZhengguoTan/DeepDWI}.
+		This work developed a self-gated zero-shot self-supervised learning (ZSSSL) reconstruction framework for navigator-free high-resolution diffusion-weighted imaging with undersampled multi-shot interleaved echo-planar imaging (iEPI) acquisition. ZSSSL belongs to algorithm unrolling with physics-guided data-consistency term and a learned regularization function. We unrolled the alternating direction method of multipliers (ADMM) with a residual neural network to explore the spatial-diffusion-dimension redundancy. 
+		First, we compared the proposed self-gated ZSSSL to conventional methods including parallel imaging as multiplexed sensitivity-encoding (MUSE) and compressed sensing reconstruction with locally-low rank (LLR) regularization. ZSSSL supplied excellent reconstruction results in both 4-shot fully-sampled data and 2-shot undersampled data at 1.0 mm isotropic resolution. 
+		Second, we demonstrated the capability of self-gated ZSSSL 
+		in DWI reconstruction with the $b$-value of \SI{3000}{s/mm^2}.
+		Compared to LLR, ZSSSL provided more noise reduction and clearer diffusion contrast.
+		Third, self-gated ZSSSL was validated with both retrospectively and prospectively acquired data at 0.7 mm isotropic resolution. This approach outperformed both MUSE and LLR regularized reconstruction in terms of image sharpness and motion robustness. 
+		Although ZSSSL required up to 8 hours training time per slice, it is generalized to all other slices and its inference time was only 1 minute. Note that LLR required about 2 hours per slice. Overall, self-gated ZSSSL enables undersampled multi-shot iEPI acquisition without the need of navigators and offers sub-millimeter DWI at clinically feasible reconstruction time. The code is publicly available at: \url{https://github.com/ZhengguoTan/DeepDWI}.
 	\end{abstract}
 
 	\begin{IEEEkeywords}
@@ -207,32 +214,23 @@
 
 	\subsubsection*{Contributions}
 	\begin{itemize}
-		\item We trained variational autoencoder (VAE) as regularization functional. VAE provides more accurate and robust representation of DWI signal.
 		\item We unrolled ADMM to perform zero-shot self-supervised learning (ZSSSL). We incorporated self-gated shot-to-shot phase variation estimation into ZSSSL for deep diffusion-weighted imaging reconstruction.
-		\item We enabled navigator-free high-resolution DWI with 21 diffusion encoding
-		at \SI{0.7}{\milli\meter} isotropic resolution and less than \SI{10}{\minute} scan time.
+		\item We enabled navigator-free high-resolution DWI with 21 diffusion-encoding 
+		directions at \SI{0.7}{\milli\meter} isotropic resolution 
+		and less than \SI{10}{\minute} scan time.
 	\end{itemize}
 
 
 	% ============================== %
 	\section{Related Work}
 
-	\begin{figure}
-		\centering
-		\includegraphics[width=\columnwidth]{../figures/fig1.png}
-		\caption{The architecture of a variational autoencoder.
-		% The latent variable ($\mathbf{z}$) is sampled from
-		}
-		% \caption{\textbf{(A)} The architecture of a variational autoencoder.
-		% 	\textbf{(B)} An illustration of the joint $k$-$q$-slice forward operator
-		% 	for multi-band multi-shot DWI acquisition.
-		% 	$[x, y, z, q]$ denotes the shape of input DWI ($\mathbf{\tilde{x}}$),
-		% 	with $x$ and $y$ as the image size, $z$ as the number of slices,
-		% 	and $q$ as the number of diffusion encodings.
-		% 	The operator outputs multi-dimensional $k$-space with the shape $[x, y, 1, c, q, s]$,
-		% 	with $c$ as the number of receiver coils, $s$ as the number of shots.}
-		\label{FIG:MODEL_VAE}
-	\end{figure}
+%	\begin{figure}
+%		\centering
+%		\includegraphics[width=\columnwidth]{../figures/fig1.png}
+%		\caption{The architecture of a variational autoencoder.
+%		}
+%		\label{FIG:MODEL_VAE}
+%	\end{figure}
 
 	\subsection{Multi-Band Multi-Shot DWI Acquisition \& Modeling} \label{SEC:FWD}
 
@@ -273,7 +271,7 @@
 	This approach allows for mesoscale-resolution DWI at \SI{7}{\tesla},
 	but still needs long scan time.
 	As listed in \cref{TAB:ACQ}, the total acquisition of
-	Protocol \#2 at \SI{0.7}{mm} isotropic resolution
+	Protocol \#3 at \SI{0.7}{mm} isotropic resolution
 	takes $16:27$ minutes with phase navigators,
 	and can be reduced to about 10 minutes after the removal of phase navigators.
 	However, as mentioned above, self gating poses a constraint
@@ -298,25 +296,26 @@
 	neural networks with nonlinear activation functions,
 	ADMM was employed in this work to solve for \cref{EQU:INV}.
 
-	\subsection{Variational Autoencoder (VAE)}
-
-	Autoencoders comprise an encoder and a decoder, connected through a latent space.
-	Conventional autoencoders have no regularization
-	on the latent space.
-	Consequently, the learned latent space lacks meaningful
-	and structural representation.
-	To allow for dimension reduction while keeping the major part of
-	the data structure,
-	Kingma and Welling \cite{kingma_2014_vae} proposed
-	the variational autoencoder (VAE), as shown in \cref{FIG:MODEL_VAE}.
-	In VAE, the encoder maps each diffusion-weighted signal
-	into a Gaussian distribution ($\mathcal{N}(\mu, \sigma)$) within the latent space.
-	The latent variable ($\mathbf{z}$) is sampled according to the encoded distribution.
-	The decoder then maps the latent variable to the input space.
-	The training of a VAE uses the Huber loss together with the Kullback-Leibler Divergence (KL-D).
-	The Huber loss minimizes the difference between the input and the output,
-	whereas KL-D minimizes the approximate posterior in latent space and
-	the exact posterior (assumed to be Gaussian distribution).
+%	\subsection{Variational Autoencoder (VAE)}
+%
+%	Autoencoders comprise an encoder and a decoder, connected through a latent space.
+%	Conventional autoencoders have no regularization
+%	on the latent space.
+%	Consequently, the learned latent space lacks meaningful
+%	and structural representation.
+%	To allow for dimension reduction while keeping the major part of
+%	the data structure,
+%	Kingma and Welling \cite{kingma_2014_vae} proposed
+%	the variational autoencoder (VAE), as shown in \cref{FIG:MODEL_VAE}.
+%	In VAE, the encoder maps each diffusion-weighted signal
+%	into a Gaussian distribution ($\mathcal{N}(\mu, \sigma)$) within the latent space.
+%	The latent variable ($\mathbf{z}$) is sampled according to the encoded distribution.
+%	The decoder then maps the latent variable to the input space.
+%	The training of a VAE uses the Huber loss together 
+%	with the Kullback-Leibler Divergence (KL-D).
+%	The Huber loss minimizes the difference between the input and the output,
+%	whereas KL-D minimizes the approximate posterior in latent space and
+%	the exact posterior (assumed to be Gaussian distribution).
 
 
 	\subsection{Algorithm Unrolling for Deep Image Reconstruction}
@@ -459,42 +458,42 @@
 	% ============================== %
 	\section{Methods}
 
-    \newcolumntype{a}{p{0.36\columnwidth}}
-    \newcolumntype{b}{p{0.20\columnwidth}}
-    \begin{table}
+    \newcolumntype{a}{p{0.30\textwidth}}
+    \newcolumntype{b}{p{0.12\textwidth}}
+    \begin{table*}
         \centering
-        \caption{NAViEPI acquisition protocols}
+        \caption{iEPI with or without navigators acquisition protocols}
         \label{TAB:ACQ}
-        \begin{tabular}{a | b b}
+        \begin{tabular}{a | b b b b}
             \toprule
-            \textbf{Protocol} & \textbf{\#1} & \textbf{\#2} \\
+            \textbf{Protocol} & \textbf{\#1} & \textbf{\#2} & \textbf{\#3} & \textbf{\#4}\\
             \hline
-            Diffusion mode & \multicolumn{2}{c}{MDDW} \\
-            Diffusion scheme & \multicolumn{2}{c}{monopolar} \\
-            Diffusion direction & \multicolumn{2}{c}{$20$} \\
-            $b$-value (\si{s/mm^2}) & \multicolumn{2}{c}{$1000$} \\
-            $b_0$ & \multicolumn{2}{c}{$1$} \\
-            FOV (\si{\square\mm}) & \multicolumn{2}{c}{$200$} \\
-            Matrix size & $200 \times 200$ & $286 \times 286$ \\
-            In-plane resolution (\si{\square\mm}) & $1.0 \times 1.0$ & $0.7 \times 0.7$ \\
-            Slice thickness (\si{\mm}) & $1.0$ & $0.7$ \\
-            Slices & $141$ & $176$ \\
-            Navigator & No & Yes / No \\
-            Shots & $4$ & $3$ \\
-            TR (\si{\ms}) & $7700$ & $15000$ \\
-            TE (\si{\ms}) & $67$ & $58/98.3$ \\
-            ESP (\si{\ms}) & $1.02$ & $1.17$ \\
-            Bandwidth (\si{Hz/Pixel}) & $1086$ & $972$ \\
-            Partial Fourier & $6/8$ & $5/8$ \\
-            Acceleration & $1 \times 3$ & $2 \times 2$ \\
-            Acquisition (\si{\minute}) & $10:42$ & $16:27$ / $9:57$ \\
+            Diffusion mode & \multicolumn{4}{c}{MDDW} \\
+            Diffusion scheme & \multicolumn{4}{c}{monopolar} \\
+            Diffusion direction & $20$ & $114$ & \multicolumn{2}{c}{$20$} \\
+            $b$-value (\si{s/mm^2}) & $1000$ & 3-shell & \multicolumn{2}{c}{$1000$} \\
+            $b_0$ & $1$ & $12$ & \multicolumn{2}{c}{$1$} \\
+            FOV (\si{\square\mm}) & \multicolumn{4}{c}{$200$} \\
+            Matrix size & \multicolumn{2}{c}{$200 \times 200$} & \multicolumn{2}{c}{$286 \times 286$} \\
+            In-plane resolution (\si{\square\mm}) & \multicolumn{2}{c}{$1.0 \times 1.0$} & \multicolumn{2}{c}{$0.7 \times 0.7$} \\
+            Slice thickness (\si{\mm}) & \multicolumn{2}{c}{$1.0$} & \multicolumn{2}{c}{$0.7$} \\
+            Slices & $141$ & $114$ & \multicolumn{2}{c}{$176$} \\
+            Navigator & \multicolumn{2}{c}{No} & Yes & No \\
+            Shots & $4$ & 2 & \multicolumn{2}{c}{$3$} \\
+            TR (\si{\ms}) & $7700$ & $4900$ & $15000$ & $8900$ \\
+            TE (\si{\ms}) & $67$ & $70$ & $58/98.3$ & $58$ \\
+            ESP (\si{\ms}) & \multicolumn{2}{c}{$1.02$} & \multicolumn{2}{c}{$1.17$} \\
+            Bandwidth (\si{Hz/Pixel}) & \multicolumn{2}{c}{$1086$} & \multicolumn{2}{c}{$972$} \\
+            Partial Fourier & \multicolumn{2}{c}{$6/8$} & \multicolumn{2}{c}{$5/8$} \\
+            Acceleration & $1 \times 3$ & $3 \times 3$ & \multicolumn{2}{c}{$2 \times 2$} \\
+            Acquisition (\si{\minute}) & $10:42$ & $20:55$ & $16:27$ & $9:57$ \\
             \bottomrule
         \end{tabular}
-    \end{table}
+    \end{table*}
 
 	\subsection{Data Acquisition}
 
-    \cref{TAB:ACQ} lists two acquisition protocols implemented on
+    \cref{TAB:ACQ} lists four acquisition protocols implemented on
 	a clinical \SI{7}{\tesla} MR system
 	(MAGNETOM Terra, Siemens Healthineers, Erlangen, Germany)
 	with a 32-channel head coil (Nova Medical, Wilmington, MA, USA)
@@ -504,8 +503,10 @@
     The first protocol employed in-plane fully-sampled four-shot EPI
     and thus supplied ground truth data for the validation
     of our proposed methods.
-    The second protocol implemented mesoscale \SI{0.7}{mm}
-    isotropic resolution based on NAViEPI or iEPI wiouth navigator
+    The second protocol employed 3-shell diffusion acquisition 
+    with $b$-values spanning $1000$, $2000$, and $3000$~\si{s/mm^2}.
+    The last two protocols implemented mesoscale \SI{0.7}{mm}
+    isotropic resolution based on NAViEPI or iEPI
     with both in-plane and slice acceleration as 2,
 	supplying a total acquisition time of $16:27$ and $9:57$ minutes, respectively.
     Three young healthy volunteers with written informed consent
@@ -513,31 +514,91 @@
 	participated in this study.
 
 
-	\subsection{Image Reconstruction with a Learned VAE as regularization}
-
-	To learn a VAE model as shown in \cref{FIG:MODEL_VAE},
-	we fed the VAE with diffusion-weighted signal simulated
-	with the diffusion tensor model \cite{basser_1994_dmri} and
-	the employed $b$-value and diffusion-encoding vectors in data acquisition.
-	The signal was augmented with added Gaussian noise and passed through the VAE network.
-	The training loss function was defined as the sum of the Huber and and KL-D function
-	between the simulated signal and the output of VAE.
-
-	In this work, both the encoder and the decoder in VAE consisted of
-	4 fully-connected linear layers.
-	The last layer in the decoder used the sigmoid activation function,
-	whereas the other layers used the ReLU activation function.
-	The latent signal had 6 features,
-	the same as the Gaussian distribution parameters $\mu$ and $\sigma$.
-	The output features of each encoder layer gradually decreased
-	from the number of features in simulated signal
-	to the number of features in latent signal,
-	whereas the input features of each decoder layer gradually increased
-	from the number of features in latent signal to the number of features in simulated signal.
-	After training, the VAE model was used as the regularization function in \cref{EQU:INV},
-	which was solved by ADMM in a plug-and-play manner.
+%	\subsection{Image Reconstruction with a Learned VAE as regularization}
+%
+%	To learn a VAE model as shown in \cref{FIG:MODEL_VAE},
+%	we fed the VAE with diffusion-weighted signal simulated
+%	with the diffusion tensor model \cite{basser_1994_dmri} and
+%	the employed $b$-value and diffusion-encoding vectors in data acquisition.
+%	The signal was augmented with added Gaussian noise and passed through the VAE network.
+%	The training loss function was defined as the sum of the Huber and and KL-D function
+%	between the simulated signal and the output of VAE.
+%
+%	In this work, both the encoder and the decoder in VAE consisted of
+%	4 fully-connected linear layers.
+%	The last layer in the decoder used the sigmoid activation function,
+%	whereas the other layers used the ReLU activation function.
+%	The latent signal had 6 features,
+%	the same as the Gaussian distribution parameters $\mu$ and $\sigma$.
+%	The output features of each encoder layer gradually decreased
+%	from the number of features in simulated signal
+%	to the number of features in latent signal,
+%	whereas the input features of each decoder layer gradually increased
+%	from the number of features in latent signal to the number of features in simulated signal.
+%	After training, the VAE model was used as the regularization function in \cref{EQU:INV},
+%	which was solved by ADMM in a plug-and-play manner.
 
     \subsection{Image Reconstruction via ADMM Unrolling and Zero-Shot Self-Supervised Learning}
+
+	\begin{algorithm}
+		\caption{ADMM Unrolling for ZSSSL} \label{ALG:ADMM}
+		\begin{algorithmic}[1]
+			\State \textbf{Initialization}:
+			\State \;\; split sampling mask $\mathbf{P}$ into 12 repetitions, each of which consists of three disjoint sets $\mathbf{T}$, $\mathbf{L}$, and $\mathbf{V}$
+			\State \;\: $p \gets 0$ and $N_{\mathrm{epoch}} \gets 100$
+			\State \;\; $\mathcal{D}_{\omega}$ set as ResNet
+			\State \;\; $\rho \gets 0.05$ and $\lambda \gets 0.05$
+			\State \;\; $\mathrm{Loss}_{\mathrm{valid}} \gets \inf$ and $\mathrm{trace} \gets 0$
+			\Function{ADMM}{$\mathrm{mask}$}
+			\State $\mathcal{A}_\mathrm{mask} \gets$ set the mask in the forward operator $\mathcal{A}$
+			\State $\tilde{\mathbf{x}}^{(0)} \gets \mathcal{A}_\mathrm{mask}^H (\mathbf{y})$ 
+			\State $\mathbf{v}^{(0)} \gets \tilde{\mathbf{x}}^{(0)}$ and $\mathbf{u}^{(0)} \gets \mathbf{0}$
+			\State $k \gets 0$ and $N_{\mathrm{unroll}} \gets 8$
+			\While{$k < N_{\mathrm{unroll}}$}
+			\State $\tilde{\mathbf{x}}^{(k+1)} \gets $ conjugate gradient with 6 iterations
+			\State $\mathbf{v}^{(k+1)} \gets (\lambda/\rho) \cdot \mathcal{D}_{\omega} (\mathbf{\tilde{x}}^{(k+1)} + \mathbf{u}^{(k)})$
+			\State $\mathbf{u}^{(k+1)} \gets \mathbf{u}^{(k)} + \mathbf{\tilde{x}}^{(k+1)} - \mathbf{v}^{(k+1)}$
+			\State $k \gets k+1$
+			\EndWhile
+			\State \Return $\tilde{\mathbf{x}}^{(k+1)}$
+			\EndFunction
+			\State \textbf{Training}:
+			\While{$p < N_{\mathrm{epoch}}$ or $\mathrm{trace} \leq 12$}
+			\State $\mathbf{x}_t \gets \mathrm{ADMM}(\mathbf{T})$
+			\State $\mathrm{Loss}_{\mathrm{train}} \gets \mathcal{L}(\mathbf{L} \mathbf{y}, \mathcal{A}_\mathbf{L}(\mathbf{x}_t))$
+			\State update $\omega$ via ADAM
+			\State \textbf{Validation}:
+			\State $\mathbf{x}_t \gets \mathrm{ADMM}(\mathbf{T} \cup \mathbf{L})$
+			\State $\mathrm{Loss}_{\mathrm{temp}} \gets \mathcal{L}(\mathbf{V} \mathbf{y}, \mathcal{A}_\mathbf{V}(\mathbf{x}_t))$
+			\If{$\mathrm{Loss}_{\mathrm{temp}} \leq \mathrm{Loss}_{\mathrm{valid}}$}
+			\State $\mathrm{Loss}_{\mathrm{valid}} \gets \mathrm{Loss}_{\mathrm{temp}}$
+			\State $\mathrm{trace} \gets 0$
+			\Else
+			\State $\mathrm{trace} \gets \mathrm{trace} + 1$
+			\EndIf
+			\EndWhile
+		\end{algorithmic}
+	\end{algorithm}
+
+    \begin{figure}
+    	\centering
+    	\includegraphics[width=\columnwidth]{../figures/fig1.pdf}
+    	\caption{Illustration of the key components in ZSSSL. 
+    		\textbf{(A)} The sampling mask $P$ in \cref{EQU:FWD} was 
+    		uniformly split into three disjoint sets: 
+    		the training mask $\mathbf{T}$ used for 
+    		the data consistency term during ZSSSL training, 
+    		the train loss mask $\mathbf{L}$ used for
+    		the loss function calculation during ZSSSL training, and 
+    		the validation loss mask $\mathbf{V}$ used for 
+    		the loss function calculation during ZSSSL validation.
+    		\textbf{(B)} and \textbf{(C)} the flowchart 
+    		for the training and the validation of ZSSSL, respectively.
+    		Note that the ResNet parameters $\omega$ were updated during training, 
+    		but not in the validation step.
+    		\textbf{(D)} Stack of DWIs were input to ResNet during ADMM unrolling.}
+    	\label{FIG:ZSSSL}
+    \end{figure}
 
     Instead of the two-step alternating minimization unrolling scheme as used in MoDL
     \cite{aggarwal_2018_modl},
@@ -554,7 +615,7 @@
     ADMM updates the variables $\mathbf{\tilde{x}}$, $\mathbf{v}$,
     and $\mathbf{u}$ in an alternating scheme.
     It splits the unrolled reconstruction into three steps,
-    as shown in \cref{EQU:ADMM}.
+    as shown in \cref{EQU:ADMM} and in the pseudo code of \cref{ALG:ADMM}.
     First, the updating step for $\mathbf{\tilde{x}}$ is solved by conjugate gradient.
     Second, the variable $\mathbf{v}$ is then updated
     via the forward pass of the neural network $\mathcal{D}_{\omega}$
@@ -563,6 +624,20 @@
     Third, the variable $\mathbf{u}$ is updated
     by adding its current estimate to the difference
     between $\mathbf{\tilde{x}}$ and $\mathbf{v}$.
+    
+    As shown in \cref{FIG:ZSSSL}, the data sampling mask $\mathbf{P}$ 
+    in ZSSSL \cite{yaman_2022_zs} is split into 
+    three disjoint sets, the training mask $\mathbf{T}$ for the data consistency term, 
+    the training loss mask $\mathbf{L}$ for the loss function calculation, 
+    and the validation loss mask $\mathbf{V}$. 
+    Each set consists of 12 repetitions constructed via random uniform sampling 
+    of the data mask $\mathbf{P}$. 
+    In each training epoch, every repetition is looped through 
+    in order to update the ResNet parameters $\omega$. 
+    Plus, the validation step is performed after every training epoch 
+    to update the minimal validation loss. 
+    If the validation loss does not reduce for 12 consecutive epochs or 
+    if 100 epochs are reached, the training is terminated.
 
     The index $k$ in \cref{EQU:ADMM} denotes the unrolling iteration,
     and $\mathcal{D}_{\omega}$ denotes the residual network (ResNet) \cite{he_2016_resnet}
@@ -580,7 +655,7 @@
 	$N_Z$ is the number of slices (same as the multi-band factor), and
 	$N_{\text{diff}}$ is the number of diffusion encodings.
 	To train a ResNet based on 2D convolution, the DWIs were reshaped and permuted
-	as $(N_Z, 2 \cdot N_{\text{diff}}, N_Y, N_X)$.
+	as $(N_Z, 2 \cdot N_{\text{diff}}, N_Y, N_X)$, as illustrated in \cref{FIG:ZSSSL} (D).
 	In this manner, 2D convolution kernels in combination with ReLU activation functions
 	loop through the varying diffusion-weighted contrast
 	to learn the key features of the high-dimensional data and
@@ -588,13 +663,12 @@
 
 	\subsection{Comparison of Regularization Techniques}
 
-	In this work, based on the 4-shot fully-sampled iEPI data
+	In this work, based on the 4-shot fully-sampled iEPI \cite{butts_1993_iepi} data
 	acquired by Protocol \#1 in \cref{TAB:ACQ},
 	we compared the reconstruction performance
 	utilizing four different regularization techniques,
 	Tikhonov $\ell^2$ regularization as in MUSE,
 	LLR regularization,
-	VAE regularization,
 	and ZSSSL with a learned regularization.
 	Note that MUSE is a simultaneous multi-slice (SMS) parallel imaging method
 	and poses no regularization along the diffusion dimension.
@@ -604,8 +678,7 @@
 	First, the joint reconstruction jointly reconstructs all DWIs.
 	Second, regularization terms that explore spatial-diffusion redundancy are imposed.
 	For instance, LLR enforces low rankness of local spatial-diffusion matrices from DWIs,
-	VAE learns a low-dimensional representation from the high-dimensional DWI signal,
-	and ZSSSL learns a ResNet regularization function
+	whereas ZSSSL learns a ResNet regularization function
 	based on spatial-diffusion convolution kernels
 	while enforcing data consistency during the unrolled training process.
 
@@ -633,7 +706,7 @@
 	Protocol \#1 \cref{TAB:ACQ}, we trained ZSSSL with all 4 shots
 	and then tested the trained model with retrospectively undersampled 2-shot data.
 	Second, given the \SI{0.7}{\milli\meter} isotropic resolution DWI data
-	with 88 multi-band slices acquired by Protocol \#2 in \cref{TAB:ACQ},
+	with 88 multi-band slices acquired by Protocol \#3 in \cref{TAB:ACQ},
 	we trained ZSSSL with only one slice and
 	then performed the inference reconstruction on all other slices.
 
@@ -668,6 +741,12 @@
     with \SI{80}{\giga\byte} memory (NVIDIA, Santa Clara, CA, USA).
     Computing infrastructure was provided by
     the Erlangen National High Performance Computing Center.
+    
+    Note that the data from Protocol \#2 in \cref{TAB:ACQ} contains a total of 
+    126 diffusion-weighted images, which is too large for the LLR and the ResNet computation 
+    in a single A100 GPU. As a result, this data was uniformly 
+    split into three consecutive parts, 
+    each of which contained 42 diffusion-weighted images.
 
 	% ============================== %
 	\section{Results}
@@ -675,59 +754,84 @@
 	\subsection{Comparison of Regularization Techniques}
 
 	\begin{figure*}
-		\centering
-		\includegraphics[width=\textwidth]{../figures/fig2.png}
-		\caption{\textbf{(A)} Comparison of different regularization functions
-			on \SI{1.0}{mm} isotropic resolution 4-shot fully-sampled iEPI DWI reconstruction:
-			(1st column) MUSE with Tikhonov regularization,
-			joint DWI reconstruction with
-			(2nd column) LLR regularization,
-			(3rd column) VAE regularization, and
-			(4th column) ZSSSL.
-			DWIs from the 2nd and the 18th diffusion-encoding direction were shown.
-			\textbf{(B)} Comparison of the above regularization functions
-			on \SI{1.0}{mm} isotropic resolution
-			retrospectively 2-shot undersampled iEPI DWI reconstruction.
-		}
-		\label{FIG:REGU}
+		\begin{minipage}[c]{0.75\textwidth}
+			\includegraphics[width=\textwidth]{../figures/fig2.png}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.23\textwidth}
+			\caption{\textbf{(A)} Comparison of different regularization functions
+				on \SI{1.0}{mm} isotropic resolution 4-shot fully-sampled iEPI 
+				(Protocol \#1 in \cref{TAB:ACQ})) 6
+				DWI reconstruction:
+				(1st column) MUSE with Tikhonov regularization,
+				joint DWI reconstruction with
+				(2nd column) LLR regularization,
+				(3rd column) ZSSSL with ResNet.
+				DWIs from the 2nd and the 18th diffusion-encoding direction were shown.
+				\textbf{(B)} Comparison of the above regularization functions
+				on \SI{1.0}{mm} isotropic resolution
+				retrospectively 2-shot undersampled iEPI DWI reconstruction. 
+				Retrospective undersampling induced more noise in the MUSE reconstruction.
+				Both LLR and ZSSSL demonstrated superior noise reduction. 
+				ZSSSL showed sharper and clearer structural delineation 
+				in both reconstructions.}
+				\label{FIG:REGU}
+		\end{minipage} 
 	\end{figure*}
 
 	\cref{FIG:REGU} displays the regularized reconstruction results
 	with the acquired 4-shot fully-sampled iEPI data as well as
 	with the retrospectively 2-shot undersampled iEPI data.
-
-	First, compared to MUSE, all other regularized reconstructions (LLR, VAE, and ZSSSL)
+	First, compared to MUSE, all other regularized joint reconstructions (LLR and ZSSSL)
 	demonstrate denoising capabilities in the case of 4-shot fully-sampled iEPI.
-	VAE shows more residual noise than LLR and ZSSSL,
-	probably because VAE performs pixel-wise regularization,
-	whereas LLR and ZSSSL extract local patches among DWIs
-	in order to enforce spatial-diffusion low rankness
-	and to perform spatial-diffusion convolution, respectively.
-
 	Second, when retrospectively undersampling the 4-shot iEPI data to 2 shots,
 	the undersampling factor became $4 \times 3$
 	(4-fold in-plane undersampling and 3-fold slice undersampling).
-	Both MUSE and VAE reconstructions show increased noise.
-	In contrast, both LLR and ZSSSL reconstructions show better denoising performance.
+	The MUSE reconstruction shows increased noise as expected.
+	In contrast, both LLR and ZSSSL reconstructions show strong denoising performance.
 	ZSSSL shows sharper and clearer delineation of brain tissues compared to LLR.
 	This may be due to the fact that the same LLR regularization strength was used
 	for both the 4-shot and the 2-shot reconstruction.
 	The empirically chosen regularization strength shows optimal for the 4-shot data,
 	but results in slightly blurring artifacts for the 2-shot data.
-	ZSSSL, on the contrary, learns the regularization strength during training
+	ZSSSL, on the contrary, learns the regularization strength 
+	($\lambda$ in \cref{EQU:INV}) during training
 	and thus requires no empirical selection.
-	Moreover, note that the LLR reconstruction took about \SI{40}{\min},
+	Moreover, note that the LLR reconstruction took about \SI{40}{\min} for these data,
 	whereas the training of ZSSSL lasted about \SI{3}{\hour}
 	but its inference took only \SI{1}{\min}.
+	
+	
+	\subsection{DWI at $b$-Value of $3000$~\si{s/mm^2}}
+	
+	\begin{figure*}
+		\centering
+		\includegraphics[width=\textwidth]{../figures/fig3.png}
+		\caption{Reconstruction results of 3-shell \SI{1.0}{mm} isotropic resolution 
+		DWI with $3 \times 3$ acceleration: (left) LLR and (right) ZSSSL.
+		Displayed images at three orthogonal planes were 
+		one diffusion-encoding direction at the $b$-value of 
+		(top) 1000 and (bottom) \SI{3000}{s/mm^2}, respectively.}
+		\label{FIG:B3000}
+	\end{figure*}
+	
+	\cref{FIG:B3000} compares the LLR and ZSSSL reconstruction results 
+	of the 3-shell \SI{1.0}{mm} isotropic resolution DWI, 
+	as acquired by Protocol \#2 in \cref{TAB:ACQ}. 
+	Diffusion-weighted images at the $b$-value of \SI{3000}{s/mm^2} supply
+	stronger diffusion weighting as compared to lower $b$-values, 
+	but at th cost of increased noise and blurring. 
+	The proposed self-gated ZSSSL is advantageous in 
+	regaining SNR and improving structural continuity and sharpness in all orientations.
+	
 
 
 	\subsection{Retrospectively Self-Gated ZSSSL}
 
 	\begin{figure*}
 		\centering
-		\includegraphics[width=\textwidth]{../figures/fig3.png}
+		\includegraphics[width=\textwidth]{../figures/fig4.png}
 		\caption{\SI{0.7}{\milli\meter} isotropic resolution DWI reconstruction results
-			based on the NAViEPI data acquired with Protocol \#2 in \cref{TAB:ACQ}.
+			based on the NAViEPI data acquired with Protocol \#3 in \cref{TAB:ACQ}.
 			\textbf{(A)} LLR regularized reconstruction.
 			\textbf{(B)} ZSSSL reconstruction.
 			The displayed two columns from left to right are
@@ -745,7 +849,7 @@
 	Both reconstruction methods were tested
 	without and with the use of navigator data
 	for shot phase estimation, respectively.
-	Data were acquired by Protocol \#2 in \cref{TAB:ACQ}.
+	Data were acquired by Protocol \#3 in \cref{TAB:ACQ}.
 	The 19th diffusion-encoding (without inter-shot motion)
 	and the 11th diffusion-encoding (with inter-shot motion)
 	reconstruction results were displayed.
@@ -755,7 +859,7 @@
 	fails to recover diffusion-weighted images regardless of motion
 	when performing self-gated shot phase estimation
 	(i.e., without the use of navigator).
-	This is because Protocol \#2 employed high undersampling factor per shot $6 \times 2$,
+	This is because Protocol \#3 employed high undersampling factor per shot $6 \times 2$,
 	which resulted in downgraded shot phase estimation.
 	This challenge can be mitigated with the use of navigator data for shot phase estimation.
 	The undersampling factor of the navigator was $2 \times 2$,
@@ -786,7 +890,7 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=\columnwidth]{../figures/fig4.png}
+		\includegraphics[width=\columnwidth]{../figures/fig5.png}
 		\caption{\SI{0.7}{\milli\meter} isotropic resolution DWI
 			of the 11th diffusion encoding (with motion)
 			in (top) the coronal and (bottom) the sagittal orientation, respectively.
@@ -811,7 +915,7 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=\columnwidth]{../figures/fig5.png}
+		\includegraphics[width=\columnwidth]{../figures/fig6.png}
 		\caption{\SI{0.7}{\milli\meter} isotropic resolution DWI
 			of the 11th diffusion encoding (with motion)
 			without the acquisition of navigator.
@@ -840,30 +944,29 @@
 	with the $b$-value of \SI{1000}{s/mm^2}
 	at \SI{0.7}{mm} isotropic resolution
 	and less than \SI{10}{\minute} scan time.
-
 	Technically, this work unrolled ADMM to perform ZSSSL training and testing.
 	Likewise, ADMM was employed to solve the inverse problem in \cref{EQU:INV}
-	with LLR and VAE regularization.
+	with LLR regularization.
 	Such an implementation assures fair comparison among different regularization methods.
 
-	While ZSSSL represents the algorithm unrolling approach to solve inverse problems,
-	the VAE neural network was firstly trained with simulated data
-	without the knowledge of the data consistency term in \cref{EQU:INV} and
-	then plugged in \cref{EQU:INV} as the regularization function to be solved via ADMM.
-	In this work, we observed that in the case of 2-shot undersampled data
-	the VAE regularization performance was downgraded.
-	First, VAE is trained by simulated dictionary data and
-	uses fully-connected layers for every pixel.
-	In other words, the implemented VAE architecture does not explore any spatial redundancy.
-	On the contrary, LLR constructs local spatial-diffusion patches such as to enforce low rankness, and ZSSSL uses the 2D-convolution-based residual neural network
-	in which the convolution window covers spatial-diffusion patches.
-	Second, the strength of VAE lie in dimensionality reduction \cite{hinton_2006_ae}.
-	The data used to test regularization functions
-	was acquired with 21 diffusion direction (Protocol \#1 in \cref{TAB:ACQ}),
-	which does not poses a large high-dimensional data.
-	Therefore, it would be more valuable to apply VAE
-	for nonlinear subspace representation of large high-dimensional data
-	(e.g., multi-shell diffusion encoding with many directions).
+%	While ZSSSL represents the algorithm unrolling approach to solve inverse problems,
+%	the VAE neural network was firstly trained with simulated data
+%	without the knowledge of the data consistency term in \cref{EQU:INV} and
+%	then plugged in \cref{EQU:INV} as the regularization function to be solved via ADMM.
+%	In this work, we observed that in the case of 2-shot undersampled data
+%	the VAE regularization performance was downgraded.
+%	First, VAE is trained by simulated dictionary data and
+%	uses fully-connected layers for every pixel.
+%	In other words, the implemented VAE architecture does not explore any spatial redundancy.
+%	On the contrary, LLR constructs local spatial-diffusion patches such as to enforce low rankness, and ZSSSL uses the 2D-convolution-based residual neural network
+%	in which the convolution window covers spatial-diffusion patches.
+%	Second, the strength of VAE lie in dimensionality reduction \cite{hinton_2006_ae}.
+%	The data used to test regularization functions
+%	was acquired with 21 diffusion direction (Protocol \#1 in \cref{TAB:ACQ}),
+%	which does not poses a large high-dimensional data.
+%	Therefore, it would be more valuable to apply VAE
+%	for nonlinear subspace representation of large high-dimensional data
+%	(e.g., multi-shell diffusion encoding with many directions).
 
 	The proposed self-gated ZSSSL approach is feasible for online reconstruction deployment.
 	First, it requires much shorter acquisition time than
@@ -871,9 +974,21 @@
 	our previous NAViEPI approach.
 	Second, ZSSSL does not require large-scale fully-sampled data for training.
 	Instead, the training of ZSSSL is scan specific.
-	Plus, the trained ZSSSL model is applicable to different undersampling factors
+	Third, the trained ZSSSL model is applicable to different undersampling factors
 	and to different slices.
-	Third, the inference time of ZSSSL is much shorter than the LLR regularization approach.
+	Fourth, the inference time of ZSSSL is much shorter than the LLR regularization approach.
+
+	We observed more frequent occurrence of stripping-type motion artifacts  
+	in the regime of sub-millimeter isotropic resolution DWI. 
+	This is logic because the scan becomes more vulnerable to 
+	shot-to-shot phase variation along with reduced slice thickness. 
+	There exist advanced pulse sequences to achieve sub-millimeter DWI.
+	For instance, Setsompop et al.~\cite{setsompop_2018_gslider} 
+	proposed the gSlider technique with slice phase–dither encoding, 
+	which excites one slab multiple times with complementary slice encoding schemes.
+	The proposed self-gated ZSSSL, in contrast, requires no such advanced slab encoding, 
+	while achieves sub-millimeter resolution 
+	at a clinical feasible reconstruction time.
 
 	This work demonstrated the capability of self-gated ZSSSL in
 	reconstructing \SI{0.7}{mm} isotropic resolution 3-shot iEPI DWI
