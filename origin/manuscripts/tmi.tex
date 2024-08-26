@@ -919,7 +919,7 @@
 		\centering
 		\includegraphics[width=\columnwidth]{../figures/fig7.png}
 		\caption{\SI{0.7}{\milli\meter} isotropic resolution DWI
-			of the 11th diffusion encoding (with motion)
+			of the 15th diffusion encoding 
 			without the acquisition of navigator.
 			The snapshots in the axial, the coronal and the sagittal views
 			were reconstructed by \textbf{(A)} self-gated MUSE,
@@ -1024,6 +1024,13 @@
 	with a more densely-sampled $k$-space central region
 	could help better estimate shot phase variations
 	\cite{liu_2004_diff_spiral,dai_2023_epti-diff}.
+
+	One limitation of this work is that the 3-shell 126-direction data 
+	were trained and inferred in three partitions 
+	because such large data cannot be allocated into one single GPU. 
+	One potential direction would be to incorporate latent models \cite{kingma_2014_vae} 
+	to reduce the data dimension, which eventually allows efficient representation 
+	of large high-dimensional data.
 
 	This work did not incorporate off-resonance correction in the reconstruction.
 	As a logic extension, the multi-shot sequence can be modified
