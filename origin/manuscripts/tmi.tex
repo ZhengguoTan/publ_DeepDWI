@@ -504,14 +504,14 @@
 	(maximum gradient strength \SI{80}{\milli\tesla/\meter} and
 	a peak slew rate \SI{200}{\tesla/\meter/\second}).
 	Protocols \#1 and \#2 realized mesoscale DWI with \SI{0.7}{mm}
-	isotropic resolution. Two-fold acceleration was employed 
-	in both in-plane and slice directions. 
-	Every DWI was acquired by three shots in an interleaved manner, 
-	which resulted in $6 \times 2$-fold acceleration per shot. 
-	Noteworthy, the total scan time can be reduced to about 10~minutes 
+	isotropic resolution. Two-fold acceleration was employed
+	in both in-plane and slice directions.
+	Every DWI was acquired by three shots in an interleaved manner,
+	which resulted in $6 \times 2$-fold acceleration per shot.
+	Noteworthy, the total scan time can be reduced to about 10~minutes
 	(Protocol \#2) when switching off navigator acquisition.
-	\hl{Protocol \#3} realized three-shell diffusion acquisition 
-	with $b$-values spanning $1000$, $2000$, and $3000$~\si{s/mm^2} 
+	\hl{Protocol \#3} realized three-shell diffusion acquisition
+	with $b$-values spanning $1000$, $2000$, and $3000$~\si{s/mm^2}
 	at \SI{1.0}{mm} isotropic resolution.
 	Four young healthy volunteers with written informed consent
 	approved by the local ethics committee
@@ -679,7 +679,7 @@
 	fall into the joint reconstruction regime.
 	They jointly reconstruct all DWIs
 	and imposes regularization terms that explore spatial-diffusion redundancy.
-	For example, LLR enforces low rankness of 
+	For example, LLR enforces low rankness of
 	local spatial-diffusion matrices from DWIs,
 	whereas ZSSSL learns a ResNet regularization function
 	based on spatial-diffusion convolution kernels
@@ -761,37 +761,37 @@
 			\includegraphics[width=\textwidth]{../figures/fig2.png}
 		\end{minipage}\hfill
 		\begin{minipage}[c]{0.23\textwidth}
-			\caption{Comparison of (top) LLR regularized and (bottom) ZSSSL 
-				reconstruction on 0.7~mm isotropic resolution DWI 
+			\caption{Comparison of (top) LLR regularized and (bottom) ZSSSL
+				reconstruction on 0.7~mm isotropic resolution DWI
 				acquired by Protocol \#1
-				with shot phase estimated from 
+				with shot phase estimated from
 				(left) navigators and (middle) imaging echoes, respectively.
-				Zoomed views of the yellow boxes from the self-gated reconstruction 
+				Zoomed views of the yellow boxes from the self-gated reconstruction
 				are displayed in the right column.
-				The use of navigators prolongs the total scan time, 
-				and thus increases the sensitivity to motion, 
-				as shown in the single-direction DWI reconstructed 
+				The use of navigators prolongs the total scan time,
+				and thus increases the sensitivity to motion,
+				as shown in the single-direction DWI reconstructed
 				with navigated shot phase.
-				The retrospectively self-gated reconstruction discards navigators, 
-				and renders sharper DWI. Compared to LLR, ZSSSL is advantageous 
-				in resolving clearer tissue boundaries in DWI, 
+				The retrospectively self-gated reconstruction discards navigators,
+				and renders sharper DWI. Compared to LLR, ZSSSL is advantageous
+				in resolving clearer tissue boundaries in DWI,
 				as indicated by red arrows.}
 				\label{FIG:MOTION_RETRO_TRA}
 		\end{minipage}
 	\end{figure*}
-	
+
 	\cref{FIG:MOTION_RETRO_TRA} demonstrates
 	the efficacy of the self-gated ZSSSL reconstruction
 	by comparing to the navigated reconstructions
-	using the NAViEPI data of the first volunteer 
+	using the NAViEPI data of the first volunteer
 	from Protocol \#1 in \cref{TAB:ACQ}.
 	The diffusion encoding with accidental inter-shot motion
 	reconstruction results were displayed.
-	
-	The selected DWIs showed residual aliasing-like and 
+
+	The selected DWIs showed residual aliasing-like and
 	severe motion-blurring artifacts
 	in the navigated reconstructions.
-	The main reason of these artifacts is that 
+	The main reason of these artifacts is that
 	the addition of navigator acquisition
 	increased the total scan time,
 	resulting in higher sensitivity to accidental inter-shot motion.
@@ -803,101 +803,101 @@
 	Such an acceleration rate proved achievable in the self-gated approach,
 	as demonstrated in the self-gated reconstruction results.
 	The self-gated ZSSSL reconstruction largely reduced the residual aliasing
-	and motion artifact. 
-	Further, self-gated ZSSSL exhibits much clearer tissue delineation 
+	and motion artifact.
+	Further, self-gated ZSSSL exhibits much clearer tissue delineation
 	in reconstructed DWIs, as indicated by red arrows in the zoomed-in views
-	in \cref{FIG:MOTION_RETRO_TRA}, 
-	whereas self-gated LLR suffers from 
+	in \cref{FIG:MOTION_RETRO_TRA},
+	whereas self-gated LLR suffers from
 	blurry tissue boundaries and signal dropouts.
-	
+
 	\begin{figure*}
 		\begin{minipage}[c]{0.75\textwidth}
 			\includegraphics[width=\textwidth]{../figures/fig3.png}
 		\end{minipage}\hfill
 		\begin{minipage}[c]{0.23\textwidth}
-			\caption{Single-direction DWI at 0.7~mm isotropic resolution 
-				as reconstructed by retrospectively self-gated 
-				(left) LLR and (right) ZSSSL 
-				in (top) the coronal and (bottom) the sagittal views. 
+			\caption{Single-direction DWI at 0.7~mm isotropic resolution
+				as reconstructed by retrospectively self-gated
+				(left) LLR and (right) ZSSSL
+				in (top) the coronal and (bottom) the sagittal views.
 				The same diffusion direction as in \cref{FIG:MOTION_RETRO_TRA}
-				is chosen for display. 
+				is chosen for display.
 				ZSSSL reduces phase ambiguities in the shot-combined reconstruction
-				, thereby rendering clearer tissue delineation and 
+				, thereby rendering clearer tissue delineation and
 				reduced stripping artifacts (as indicated by the red arrows).}
 			\label{FIG:MOTION_RETRO_2}
 		\end{minipage}
 	\end{figure*}
-	
+
 	\cref{FIG:MOTION_RETRO_2} shows diffusion-weighted images
 	at the same diffusion encoding as in \cref{FIG:MOTION_RETRO_TRA}
 	in the coronal and the sagittal view, respectively.
 	As mentioned in \cref{SEC:ZSSSL_GEN}, ZSSSL was trained using only one slice
 	and then inferred on the remaining slices.
 	The ZSSSL model generalized well across slices.
-	The inference of every slice took only about 1~minute, 
+	The inference of every slice took only about 1~minute,
 	whereas the LLR reconstruction took about 48~minutes per slice.
-	More importantly, the self-gated LLR reconstruction exhibited residual 
-	motion-induced stripping artifacts 
+	More importantly, the self-gated LLR reconstruction exhibited residual
+	motion-induced stripping artifacts
 	in both coronal and sagittal views \cite{chang_2021_musium},
 	whereas the self-gated ZSSSL approach substantially removed these artifacts
 	and supplied high-quality DWI without the need of navigators.
-	
+
 	\subsection{Prospectively Self-Gated ZSSSL}
-	
+
 	\begin{figure*}
 		\centering
 		\includegraphics[width=\textwidth]{../figures/fig4.png}
-		\caption{0.7~mm isotropic mesoscale DWI with 21 volumes at about 10~minutes 
-			without the acquisition of navigators. 
-			(A) Single-direction DWI and 
-			(B) Mean DWI of 20 diffusion directions 
+		\caption{0.7~mm isotropic mesoscale DWI with 21 volumes at about 10~minutes
+			without the acquisition of navigators.
+			(A) Single-direction DWI and
+			(B) Mean DWI of 20 diffusion directions
 			at three orthogonal orientations are displayed.
-			DWIs were reconstructed by 
+			DWIs were reconstructed by
 			(top) MUSE, (middle) LLR, and (bottom) ZSSSL.
 			MUSE suffers from severe noise artifacts at such small voxel size.
-			LLR is able to clean up most of the noise, 
-			but is still hampered by signal void artifacts in the axial view, 
-			which appears as stripping artifacts in coronal and sagittal views 
+			LLR is able to clean up most of the noise,
+			but is still hampered by signal void artifacts in the axial view,
+			which appears as stripping artifacts in coronal and sagittal views
 			(as indicated by red arrows).
 			ZSSSL significantly reduces both noise and signal voids.
-			In the mean DWI images, LLR shows amplified noise 
-			in the cerebellum region, 
+			In the mean DWI images, LLR shows amplified noise
+			in the cerebellum region,
 			whereas ZSSSL yields more homogeneous signal distributions.}
 		\label{FIG:MOTION_PROS}
 	\end{figure*}
-	
+
 	\cref{FIG:MOTION_PROS} compares the reconstruction results
-	using the prospectively acquired iEPI data without navigators 
-	of the second volunteer 
+	using the prospectively acquired iEPI data without navigators
+	of the second volunteer
 	(refer to Protocol \#2 in \cref{TAB:ACQ}).
-	The snapshot single diffusion-direction DWIs 
-	as well as mean DWIs 
+	The snapshot single diffusion-direction DWIs
+	as well as mean DWIs
 	at three orthogonal planes were displayed.
-	The MUSE reconstruction suffered from strong noise 
+	The MUSE reconstruction suffered from strong noise
 	at such high spatial resolution.
-	
+
 	The LLR regularized reconstruction largely reduced noise,
-	but still exhibited signal void in the axial view, 
-	which appeared as striping artifacts in the coronal and sagittal views 
+	but still exhibited signal void in the axial view,
+	which appeared as striping artifacts in the coronal and sagittal views
 	(refer to the red arrows in \cref{FIG:MOTION_PROS}).
-	These artifacts can be reduced by incorporating adaptive noise estimation 
-	in LLR regularization \cite{cordero_2019_cplxdwi}. 
-	On the other hand, the LLR regularized reconstruction 
+	These artifacts can be reduced by incorporating adaptive noise estimation
+	in LLR regularization \cite{cordero_2019_cplxdwi}.
+	On the other hand, the LLR regularized reconstruction
 	showed residual noise in the cerebellum region
-	(refer to the blue arrows in \cref{FIG:MOTION_PROS}), 
-	which could be caused by the $B_1$ excitation field inhomogeneity 
-	at \SI{7}{\tesla}. 
-	
+	(refer to the blue arrows in \cref{FIG:MOTION_PROS}),
+	which could be caused by the $B_1$ excitation field inhomogeneity
+	at \SI{7}{\tesla}.
+
 	The above-mentioned artifacts were nearly gone in the ZSSSL reconstruction.
-	The DWI in the axial view showed clearer diffusion contrasts 
-	and thus better tissue delineation in the coronal and sagittal views. 
-	Plus, the DWI in the sagittal view showed more homogeneous 
+	The DWI in the axial view showed clearer diffusion contrasts
+	and thus better tissue delineation in the coronal and sagittal views.
+	Plus, the DWI in the sagittal view showed more homogeneous
 	signal distribution.
-	
+
 	\begin{figure}
 		\centering
 		\includegraphics[width=\columnwidth]{../figures/fig5.png}
-		\caption{Convergence analysis along the ADMM unrolling training 
+		\caption{Convergence analysis along the ADMM unrolling training
 			and validation epochs
 			for the ZSSSL results in \cref{FIG:MOTION_PROS}.
 			Displayed curves are (red solid) the training loss,
@@ -905,52 +905,52 @@
 			and (blue solid) the learned regularization strength $\lambda$, respectively.}
 		\label{FIG:CONVERGENCE}
 	\end{figure}
-	
+
 	\cref{FIG:CONVERGENCE} displays the training and validation loss
 	as well as the learned regularization strength along epochs.
 	It can be seen that 100 epochs were sufficient for
 	the convergence of ADMM unrolling.
-	In addition, the regularization strength converged 
+	In addition, the regularization strength converged
 	to the value of about 0.027.
 
 
 	\begin{figure*}
 		\includegraphics[width=\textwidth]{../figures/fig6.png}
-		\caption{Prospectively self-gated DWI reconstruction results 
-			at 0.7~mm isotropic resolution. Displayed images are 
+		\caption{Prospectively self-gated DWI reconstruction results
+			at 0.7~mm isotropic resolution. Displayed images are
 			one axial slice at four different diffusion-encoding directions.
-			ZSSSL enables much cleaner delineations of diffusion contrasts 
+			ZSSSL enables much cleaner delineations of diffusion contrasts
 			than LLR.}
 		\label{FIG:SG_ZSSSL_VOL3}
 	\end{figure*}
-	
-	\cref{FIG:SG_ZSSSL_VOL3} showed the reconstructed DWIs 
-	at four diffusion encodings based on the iEPI data 
-	acquired from the third volunteer. 
-	In this experiment, the volunteer was instructed 
+
+	\cref{FIG:SG_ZSSSL_VOL3} showed the reconstructed DWIs
+	at four diffusion encodings based on the iEPI data
+	acquired from the third volunteer.
+	In this experiment, the volunteer was instructed
 	to keep still during scan.
-	Again, the proposed ZSSSL reconstruction 
-	with spatial-diffusion convolution illustrated 
-	superior tissue structure delineation 
+	Again, the proposed ZSSSL reconstruction
+	with spatial-diffusion convolution illustrated
+	superior tissue structure delineation
 	to the LLR regularized reconstruction.
 
 %	\cref{FIG:MOTION_RETRO_TRA} displays the regularized reconstruction results
 %	using both the 4-shot fully-sampled iEPI data and
 %	the retrospectively 2-shot undersampled iEPI data.
-%	Firstly, compared to MUSE, all other regularized joint reconstructions 
+%	Firstly, compared to MUSE, all other regularized joint reconstructions
 %	(LLR and ZSSSL)
 %	demonstrated denoising capabilities in the case of 4-shot fully-sampled iEPI.
 %	Secondly, when the 4-shot iEPI data was retrospectively undersampled to 2 shots,
 %	the undersampling factor became $4 \times 3$
 %	(4-fold in-plane undersampling and 3-fold slice undersampling).
 %	As expected, the MUSE reconstruction showed increased noise.
-%	In contrast, both LLR and ZSSSL reconstructions 
+%	In contrast, both LLR and ZSSSL reconstructions
 %	showed strong denoising performance.
 %	ZSSSL, in particular, provided sharper and clearer delineation
 %	of brain tissues compared to LLR.
 %	This may attribute to the fact that the same LLR regularization strength was used
 %	for both the 4-shot and the 2-shot reconstructions.
-%	While this empirically chosen regularization strength 
+%	While this empirically chosen regularization strength
 %	was optimal for the 4-shot data,
 %	it resulted in slightly blurring artifacts for the 2-shot data.
 %	ZSSSL, on the contrary, learned the regularization strength
@@ -968,7 +968,7 @@
 		\caption{Reconstruction results of 3-shell \SI{1.0}{mm} isotropic resolution
 			DWI with $3 \times 3$ acceleration: (left) LLR and (right) ZSSSL.
 			(Top) Single-direction DWI at the $b$-values of
-			\SI{3000}{s/mm^2} and 
+			\SI{3000}{s/mm^2} and
 			(bottom) colored fractional anisotropy maps.}
 		\label{FIG:B3000}
 	\end{figure*}
@@ -976,13 +976,13 @@
 	\cref{FIG:B3000} \hl{compares} the LLR and ZSSSL reconstruction results
 	of the 3-shell \SI{1.0}{mm} isotropic resolution DWI,
 	as acquired by Protocol \#3 in \cref{TAB:ACQ}.
-	In the single-direction DWI at the $b$-value of \SI{3000}{s/mm^2}, 
-	the proposed self-gated ZSSSL 
-	showed slight improvement in SNR and structural sharpness 
-	compared to LLR. The colored fractional anisotropy maps, 
-	as obtained via diffusion tensor model fitting over DWIs in 126 directions, 
+	In the single-direction DWI at the $b$-value of \SI{3000}{s/mm^2},
+	the proposed self-gated ZSSSL
+	showed slight improvement in SNR and structural sharpness
+	compared to LLR. The colored fractional anisotropy maps,
+	as obtained via diffusion tensor model fitting over DWIs in 126 directions,
 	showed similar quality between LLR and ZSSSL.
-	
+
 
 
 	% ============================== %
@@ -1067,11 +1067,11 @@
 	could help better estimate shot phase variations
 	\cite{liu_2004_diff_spiral,dai_2023_epti-diff}.
 
-	One limitation of this work is that the 3-shell 126-direction data 
-	were trained and inferred in three partitions 
-	because such large data cannot be allocated into one single GPU. 
-	One potential direction would be to incorporate latent models \cite{kingma_2014_vae} 
-	to reduce the data dimension, which eventually allows efficient representation 
+	One limitation of this work is that the 3-shell 126-direction data
+	were trained and inferred in three partitions
+	because such large data cannot be allocated into one single GPU.
+	One potential direction would be to incorporate latent models \cite{kingma_2014_vae}
+	to reduce the data dimension, which eventually allows efficient representation
 	of large high-dimensional data.
 
 	This work did not incorporate off-resonance correction in the reconstruction.
