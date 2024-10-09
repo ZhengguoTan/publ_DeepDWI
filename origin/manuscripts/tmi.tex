@@ -23,7 +23,7 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 	T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \markboth{\journalname, VOL. XX, NO. XX, XXXX 2024}
-{Tan \MakeLowercase{\textit{et al.}}: Self-Gated ZSSSL DWI}
+{Tan \MakeLowercase{\textit{et al.}}: Self-Gated ADMM Unrolling for High-Resolution DWI}
 
 
 \newcommand{\argmin}{\operatornamewithlimits{argmin}}
@@ -37,7 +37,7 @@
 % Blackbox is not in favor
 
 \begin{document}
-	\title{High-Resolution Motion-Robust Diffusion-Weighted Imaging with Self-Gated Zero-Shot Self-Supervised Reconstruction}
+	\title{High-Resolution Motion-Robust Diffusion-Weighted Imaging with Self-Gated  Self-Supervised ADMM Unrolling}
 
 	\author{Zhengguo Tan, Patrick A Liebig, Annika Hofmann, Frederik B Laun, Florian Knoll
 		\thanks{This work was supported in part by
@@ -88,16 +88,17 @@
 
 	% Keep the abstract to 250 words or less.
 	\begin{abstract}
-		This work introduces a self-gated zero-shot self-supervised learning (ZSSSL) reconstruction framework for navigator-free, high-resolution diffusion-weighted imaging using undersampled multi-shot interleaved echo-planar imaging (iEPI) acquisition. ZSSSL belongs to the algorithm unrolling technique, with a physics-guided data-consistency term and a learned regularization function. We unroll the alternating direction method of multipliers (ADMM) with a 2D residual neural network to leverage redundancy in the spatial-diffusion dimension.
-		First, the proposed self-gated ZSSSL method is validated with both retrospectively and prospectively acquired data at 0.7 mm isotropic resolution. This approach outperforms both multiplexed sensitivity-encoding (MUSE) and compressed sensing with locally-low rank (LLR) regularization in terms of image sharpness, tissue continuity and motion robustness.
-		Second, the implemented ADMM unrolling converges sufficiently in 100 epochs, 
+		This work introduces a self-gated self-supervised learning reconstruction framework for navigator-free, high-resolution, and motion-robust diffusion-weighted imaging (DWI) based on undersampled multi-shot interleaved echo-planar imaging (iEPI) acquisition. Specifically, the proposed self-supervised learning unrolls the alternating direction method of multipliers (ADMM). The ADMM unrolling alternatively minimizes a physics-guided data-consistency term and a learned regularization function. Two-dimensional residual neural network (ResNet) is employed as the learnable regularization to leverage redundancy in the spatial-diffusion dimension.
+		First, we perform a computational experiment in which ADMM unrolling is trained with only one multi-band slice out of the volumetric brain DWI acquisition, and the trained model is then inferred on all remaining slices. This experiment demonstrates the model's cross-slice generalization feature, where the trained model is applicable to "unseen" slices.
+		Second, the proposed self-gated ADMM unrolling is validated with both retrospectively and prospectively acquired data at 0.7 mm isotropic resolution. Our method outperforms both multiplexed sensitivity-encoding (MUSE) and compressed sensing with locally-low rank (LLR) regularization in terms of image sharpness, tissue continuity and motion robustness.
+		Third, ADMM unrolling converges sufficiently in 100 epochs, 
 		and enables the learning of the regularization strength.
-		Third, while ZSSSL requires up to eight hours training time per slice, it generalizes well to all other slices, with an inference time of just one minute. In comparison, LLR requires about an hour per slice.
-		Overall, self-gated ZSSSL enables undersampled multi-shot iEPI acquisition without the need of navigators, providing sub-millimeter DWI at clinically feasible reconstruction times. The source code is publicly available at:~https://github.com/ZhengguoTan/DeepDWI.
+		Fourth, while ADMM unrolling requires up to eight hours training per slice, its inference time is just one minute. In comparison, LLR requires about an hour per slice.
+		Overall, self-gated self-supervised ADMM unrolling enables undersampled multi-shot iEPI acquisition without the need of navigators, providing sub-millimeter DWI at clinically feasible reconstruction times. The source code is publicly available at:~\url{https://github.com/ZhengguoTan/DeepDWI}.
 	\end{abstract}
 
 	\begin{IEEEkeywords}
-	Diffusion weighted imaging, Magnetic resonance imaging, Image reconstruction, End-to-end learning in medical imaging, Machine learning
+	Diffusion weighted imaging, Magnetic resonance imaging, Image reconstruction, Algorithm unrolling, Self-supervised learning, End-to-end learning in medical imaging, Machine learning
 	\end{IEEEkeywords}
 
 	% ============================== %
@@ -111,7 +112,7 @@
 	magnetic resonance spectroscopic imaging (MRSI)
 	\cite{brown_1982_mrsi},
 	diffusion-weighted imaging (DWI)
-	\cite{lebihan_1986_diff,merboldt_1985_diff},
+	\cite{jones_2010_diff},
 	and quantitative parameter mapping
 	\cite{doneva_2010_moba,ma_2013_mrf}.
 	Conventional HD-MRI, however, requires long acquisition times,
@@ -170,13 +171,13 @@
 	accelerated MRI reconstruction in various scenarios:
 	including but not limited to
 	supervised learning with fully sampled reference images
-	\cite{hammernik_2018_varnet,aggarwal_2018_modl},
+	\cite{yang_2018_admmnet,hammernik_2018_varnet,aggarwal_2018_modl},
 	and self-supervised learning
 	with only undersampled data available for training
 	\cite{yaman_2020_ssdu,yaman_2022_zs}.
 	Notably, acquiring fully sampled DWI
 	for training a regularization function is quite challenging.
-	First, fully-sampled DWI requires longer echo times in EPI,
+	First, fully-sampled DWI requires much longer echo trains in EPI,
 	which not only elongates the scan times
 	but also reduces the signal-to-noise ratio (SNR).
 	Second, the variety of diffusion acquisition modes necessitates
@@ -207,23 +208,23 @@
 	with nonlinear activation functions,
 	which may struggle with complex functions like those required for DWI signals.
 	On the other hand, 
-	the standard diffusion tensor model \cite{basser_1994_dmri}
-	consists of six tensor elements,
+	the diffusion tensor and kurtosis model \cite{basser_1994_dmri}
+	consists of at least six tensor elements,
 	so the diffusion-weighted signal dictionary 
-	based on the diffusion tensor model 
-	usually consists of tens of millions atoms.
+	based on these models
+	usually requires tens of millions atoms.
 
 	\subsubsection*{Contributions}
 	\begin{itemize}
-		\item We unrolled ADMM to perform zero-shot self-supervised learning (ZSSSL)
-		and incorporated self-gated shot-to-shot phase variation estimation 
-		into ZSSSL for deep diffusion-weighted imaging reconstruction.
-		\item We demonstrated that the trained ZSSSL model from one single slice 
+		\item We unroll ADMM to perform zero-shot self-supervised learning 
+		and incorporate self-gated shot-to-shot phase variation estimation 
+		into the data-consistency term for deep diffusion-weighted imaging reconstruction.
+		\item We demonstrate that the trained ADMM unrolling model from one single slice 
 		can be applied to all other slices. 
 		This significantly reduces the training time.
-		\item We achieved navigator-free high-resolution DWI with 21 diffusion-encoding
+		\item We achieve navigator-free high-resolution DWI with 21 diffusion-encoding
 		directions at \SI{0.7}{\milli\meter} isotropic resolution,
-		and a scan time of under 10 minutes.
+		a scan time of under 10 minutes, and a reconstruction time of about 1 minute per slice.
 	\end{itemize}
 
 
@@ -264,7 +265,7 @@
 	to accurately estimate the shot-to-shot phase variation.
 	Multiplexed sensitivity-encoding (MUSE) type reconstruction techniques
 	\cite{liu_2004_diff_spiral,uecker_2009_nlinv_diff,chen_2013_muse,merrem_2019_nl_steam}
-	realized the self-gating strategy,
+	achieved the self-gating strategy,
 	where the $k$-space data of each shot were used to reconstruct
 	its corresponding shot image followed by a phase smoothing approach.
 	Self-gated shot phase estimation does not require
@@ -277,7 +278,7 @@
 	This approach allows for mesoscale-resolution DWI at \SI{7}{\tesla},
 	but still needs long scan time.
 	As listed in \cref{TAB:ACQ}, the total acquisition of
-	Protocol \#3 at \SI{0.7}{mm} isotropic resolution
+	Protocol \#1 at \SI{0.7}{mm} isotropic resolution
 	takes $16:27$ minutes with phase navigators.
 	This scan time can be reduced to approximately 10 minutes
 	be removing the phase navigators (Protocol \#2 in \cref{TAB:ACQ}).
@@ -292,7 +293,7 @@
 		\label{EQU:INV}
 	\end{equation}
 	where $\mathbf{y}$ is the measured $k$-space data.
-	The first term in \cref{EQU:INV} presents data consistency, and
+	The first term in \cref{EQU:INV} presents the data-consistency term, and
 	the second term presents the regularization function $\mathcal{R}(x)$
 	with the regularization strength $\lambda$.
 	When using the Tikhonov regularization,
@@ -337,7 +338,7 @@
 	the forward pass of the estimate $\mathcal{A} (\mathbf{x})$
 	must be close to the measured data $\mathbf{y}$.
 	By mapping the operations used in iterative algorithms
-	onto networks, unrolled algorithms can be trained with data,
+	onto neural networks, unrolled algorithms can be trained with data,
 	leading to much faster inference
 	than conventional iterative algorithms \cite{monga_2021_algunroll}.
 	Further, recent developments have shown that
@@ -347,24 +348,25 @@
 	For instance, Hammernik et al.~\cite{hammernik_2018_varnet}
 	proposed to unroll the gradient descent algorithm
 	with a learned neural network
-	(e.g.~U-net \cite{ronneberger_2015_unet})
+	(e.g.~U-Net \cite{ronneberger_2015_unet})
 	as the regularization function.
 	Aggarwal et al.~\cite{aggarwal_2018_modl} proposed
 	the model-based deep learning architecture for inverse problems (MoDL)
 	to unroll the alternating minimization algorithm
-	with a learned residual denoising network \cite{he_2016_resnet}
+	with a learned residual denoising network (ResNet) \cite{he_2016_resnet}
 	as regularization.
 
 
-	\subsection{Self-Supervised Learning for Image Reconstruction}
+	\subsection{Self-Supervised Learning for High-Dimensional Image Reconstruction}
 
-	In many MRI applications, 
+	In many HD-MRI applications, 
 	such as dynamic imaging and diffusion-weighted imaging,
 	acquiring fully-sampled data
 	for supervised learning can be challenging.
-	To tackle this issue, Yaman et al.~\cite{yaman_2020_ssdu}
-	proposed self-supervised learning via data undersampling (SSDU),
-	which learns the regularization function in \cref{EQU:INV}
+	Recently, Yaman et al.~\cite{yaman_2020_ssdu}
+	proposed self-supervised learning via data undersampling (SSDU) 
+	for two-dimensional parallel imaging reconstruction.
+	SSDU learns the regularization function in \cref{EQU:INV}
 	by splitting available undersampled data into two disjoint sets,
 	one of which is used in the data consistency term and
 	another used for the computation in the training loss function.
@@ -372,10 +374,11 @@
 	To close the domain gap between training and test data,
 	Yaman et al.~\cite{yaman_2022_zs} proposed
 	scan-specific zero-shot self-supervised learning (ZSSSL),
-	which splits a single data set into three disjoint sets
+	which splits a single undersampled data set into three disjoint sets
 	for (a) the data consistency term, (b) the loss calculation during training,
 	and (c) validation, respectively.
-	Recently, ZSSSL has been adopted for multi-contrast image reconstruction
+	The concept of ZSSSL has been adopted for simultaneous 
+	$T_1$ and $T_2$ relaxation parameter mapping
 	\cite{heydari_2024_jmaple}.
 
 	% ============================== %
@@ -438,14 +441,14 @@
 
 	\subsection{Data Acquisition}
 
-	\cref{TAB:ACQ} lists three acquisition protocols implemented on
+	\cref{TAB:ACQ} lists two acquisition protocols implemented on
 	a clinical \SI{7}{\tesla} MR system
 	(MAGNETOM Terra, Siemens Healthineers, Erlangen, Germany)
 	equipped with a 32-channel head coil (Nova Medical, Wilmington, MA, USA)
 	and the XR-gradient system
 	(maximum gradient strength \SI{80}{\milli\tesla/\meter} and
 	a peak slew rate \SI{200}{\tesla/\meter/\second}).
-	Protocols \#1 and \#2 realized mesoscale DWI with \SI{0.7}{mm}
+	Protocols \#1 and \#2 realized mesoscale high-resolution DWI with \SI{0.7}{mm}
 	isotropic resolution. Two-fold acceleration is employed
 	in both in-plane and slice directions.
 	Every DWI data is acquired by three shots in an interleaved manner,
@@ -456,10 +459,10 @@
 	approved by the local ethics committee
 	participated in this study.
 
-	\subsection{Image Reconstruction via ADMM Unrolling and Zero-Shot Self-Supervised Learning}
+	\subsection{Image Reconstruction via ADMM Unrolling}
 
 	\begin{algorithm}
-		\caption{ADMM Unrolling for ZSSSL} \label{ALG:ADMM}
+		\caption{Self-Supervised ADMM Unrolling} \label{ALG:ADMM}
 		\begin{algorithmic}[1]
 			\State \textbf{Initialization}:
 			\State \;\; split sampling mask $\mathbf{P}$ into 12 repetitions, each of which consists of three disjoint sets $\mathbf{T}$, $\mathbf{L}$, and $\mathbf{V}$
@@ -501,20 +504,21 @@
 	\begin{figure}
 		\centering
 		\includegraphics[width=\columnwidth]{../figures/fig1.pdf}
-		\caption{Illustration of the key components in ZSSSL.
+		\caption{Illustration of the key components in ADMM unrolling.
 			\textbf{(A)} The sampling mask $P$ in \cref{EQU:FWD} was
 			uniformly split into three disjoint sets:
 			the training mask $\mathbf{T}$ used for
-			the data consistency term during ZSSSL training,
+			the data consistency term during training,
 			the train loss mask $\mathbf{L}$ used for
-			the loss function calculation during ZSSSL training, and
+			the loss function calculation during training, and
 			the validation loss mask $\mathbf{V}$ used for
-			the loss function calculation during ZSSSL validation.
+			the loss function calculation during validation.
 			\textbf{(B)} and \textbf{(C)} show the flowchart
-			for the training and the validation of ZSSSL, respectively.
+			for the training and the validation of an unrolled ADMM model, respectively.
 			Note that the ResNet parameters $\omega$ are updated during training,
 			but remain fixed during the validation step.
-			\textbf{(D)} A stack of DWIs is input into ResNet during ADMM unrolling.}
+			\textbf{(D)} A stack of diffusion-weighted images 
+			is input into ResNet during ADMM unrolling.}
 		\label{FIG:ZSSSL}
 	\end{figure}
 
@@ -543,9 +547,10 @@
 	by adding its current estimate to the difference
 	between $\mathbf{x}$ and $\mathbf{v}$.
 
-	As shown in \cref{FIG:ZSSSL}, the data sampling mask $\mathbf{P}$
-	in ZSSSL \cite{yaman_2022_zs} is split into
-	three disjoint sets, the training mask $\mathbf{T}$ for the data consistency term,
+	As shown in \cref{FIG:ZSSSL}, to train an unrolled ADMM model, 
+	the data sampling mask $\mathbf{P}$
+	is split into three disjoint sets, 
+	the training mask $\mathbf{T}$ for the data consistency term,
 	the training loss mask $\mathbf{L}$ for the loss function calculation,
 	and the validation loss mask $\mathbf{V}$.
 	Each set consists of 12 repetitions constructed via random uniform sampling
@@ -558,48 +563,49 @@
 	if 100 epochs are reached, the training is terminated.
 
 	The index $k$ in \cref{EQU:ADMM} denotes the unrolling iteration,
-	and $\mathcal{D}_{\omega}$ denotes the residual network (ResNet) \cite{he_2016_resnet}
+	and $\mathcal{D}_{\omega}$ denotes the ResNet \cite{he_2016_resnet}
 	parameterized by $\omega$.
-	In this work, 2D convolution was employed to construct the ResNet.
+	In this work, 2D convolution was employed to construct the ResNet layers.
 	In PyTorch, 2D convolution requires four-dimensional tensors as input and output.
 	For instance, a matrix with the size $(N, C, H, W)$ is acceptable
 	for the the 'conv2d' function in PyTorch.
 	Here, $W$ and $H$ denote the width and height of the convolution kernel,
 	$C$ denotes the number of channels, and $N$ denotes the batch size.
-	However, the diffusion-weighted images ($x$) to be reconstructed
+	However, the diffusion-weighted images ($\mathbf{x}$) to be reconstructed
 	has the size $(N_{\text{diff}}, N_Z, N_Y, N_X, 2)$,
-	where $2$ stands for the real and imaginary part of the complex-valued DWIs,
-	$N_X$ and $N_Y$ are the width and the height of DWIs,
-	$N_Z$ is the number of slices (same as the multi-band factor), and
-	$N_{\text{diff}}$ is the number of diffusion encodings.
-	To train a ResNet based on 2D convolution, the DWIs were reshaped and permuted
+	where $2$ stands for the real and imaginary part 
+	of the complex-valued diffusion-weighted images,
+	$N_X$ and $N_Y$ are the width and the height of diffusion-weighted images,
+	$N_Z$ is the number of slices (identical to the multi-band factor), and
+	$N_{\text{diff}}$ is the number of diffusion encoding.
+	To train a ResNet based on 2D convolution, 
+	the diffusion-weighted images were reshaped and permuted
 	as $(N_Z, 2 \cdot N_{\text{diff}}, N_Y, N_X)$, as illustrated in \cref{FIG:ZSSSL} (D).
 	In this manner, 2D convolution kernels in combination with ReLU activation functions
 	loop through the varying diffusion-weighted contrast
 	to learn the key features of the high-dimensional data and
 	to reduce noisy and aliasing artifacts in unrolled reconstruction.
+	
+	\subsection{Model Generalizability} \label{SEC:ZSSSL_GEN}
+	
+	Volumetric whole brain DWI acquisition consists of many multi-band slices, 
+	and the training of algorithm unrolling models on all slices requires 
+	hundreds of GPU computing hours. 
+	To investigate the model generalizability and to accelerate reconstruction, 
+	we performed two training and inference strategies. 
+	First, we trained the ADMM unrolling model with only one multi-band slice data, 
+	and then tested the model on all remaining multi-band slices. 
+	We dubbed this approach as "single-slice training". 
+	Second, we trained and tested every multi-band slice individually, 
+	which was dubbed as "slice-by-slice training". 
+	The single-slice training strategy saves tremendous computing time, 
+	as its model is learned from one single slice and 
+	the inference time per slice is only about one minute. 
+	By comparing these two training strategies, 
+	we aim at demonstrating the model generalizability and 
+	its applicability to other slices which are "unseen" in single-slice training.
 
-	\subsection{Comparison of Regularization Techniques}
-
-	This work compared the reconstruction performance
-	of three different regularization techniques,
-	Tikhonov $\ell^2$ regularization (as used in MUSE),
-	LLR regularization,
-	and ZSSSL with a learned regularization.
-	Note that MUSE is a simultaneous multi-slice (SMS) parallel imaging method
-	and poses no regularization along the diffusion dimension,
-	effectively solving each DWI reconstruction independently.
-	In contrast, all other regularized reconstructions
-	fall into the joint reconstruction regime.
-	They jointly reconstruct all DWIs
-	and imposes regularization terms that explore spatial-diffusion redundancy.
-	For example, LLR enforces low rankness of
-	local spatial-diffusion matrices from DWIs,
-	whereas ZSSSL learns a ResNet regularization function
-	based on spatial-diffusion convolution kernels
-	while enforcing data consistency during the unrolled training process.
-
-	\subsection{Self-Gated ZSSSL}
+	\subsection{Self-Gated ADMM Unrolling}
 
 	As discussed in \cref{SEC:FWD}, there are two approaches for
 	estimating shot-to-shot phase variation: self-gated and navigator-based.
@@ -614,59 +620,109 @@
 	Therefore, a key question is whether it is feasible to
 	discard the shot-to-shot phase navigator 
 	while keeping undersampled iEPI acquisition.
-	In this work, we investigated the feasibility of ZSSSL in self-gated scan
+	In this work, we investigated the feasibility of ADMM unrolling in self-gated scan
 	for \SI{0.7}{\milli\meter} isotropic resolution DWI.
 
-	\subsection{ZSSSL Model Generalizability} \label{SEC:ZSSSL_GEN}
-
-	Volumetric whole brain DWI acquisition consists of many multi-band slices, 
-	and the training of algorithm unrolling models on every slice requires 
-	hundreds of GPU computing hours. 
-	To investigate the model generalizability and to accelerate reconstruction, 
-	we performed two training and inference strategies. 
-	First, we trained the ZSSSL model with only one multi-band slice data, 
-	and then tested the model on all remaining multi-band slices. 
-	We dubbed this approach as "single-slice training". 
-	Second, we trained and tested every multi-band slice individually, 
-	which was dubbed as "slice-by-slice training". 
-	The single-slice training strategy saves tremendous computing time, 
-	as its model is learned from one single slice and 
-	the inference time per slice is only about one minute. 
-	By comparing these two training strategies, 
-	we aim at demonstrating the model generalizability and 
-	its applicability to other slices which are "unseen" in training.
+	\subsection{Comparison of Regularization Techniques}
+	
+	This work compared the reconstruction performance
+	of three different regularization techniques,
+	Tikhonov $\ell^2$ regularization (as used in MUSE),
+	LLR regularization,
+	and ADMM unrolling with a learned regularization.
+	Note that MUSE is a simultaneous multi-slice (SMS) parallel imaging method
+	and poses no regularization along the diffusion dimension,
+	effectively solving each DWI reconstruction independently.
+	In contrast, all the other two regularized reconstructions
+	fall into the joint reconstruction regime.
+	They jointly reconstruct all diffusion-weighted images
+	and impose regularization terms exploring spatial-diffusion redundancies.
+	For example, LLR enforces the low rankness of
+	local spatial-diffusion matrices from diffusion-weighted images,
+	whereas ADMM unrolling learns a regularization function composed by neural networks
+	based on spatial-diffusion convolution kernels
+	while enforcing data consistency during the unrolled training process.
 
 	\subsection{Computation}
 
-	All reconstructions were in this work done on a single A100 SXM4/NVLink GPU
+	All reconstructions in this work were done on a single A100 SXM4/NVLink GPU
 	with \SI{80}{\giga\byte} memory (NVIDIA, Santa Clara, CA, USA).
 	Computing infrastructure was provided by
-	the Erlangen National High Performance Computing Center.
+	the Erlangen National High Performance Computing Center and 
+	by the Advanced Research Computing at the University of Michigan, Ann Arbor.
 
 	% ============================== %
 	\section{Results}
 
-	\subsection{Retrospectively Self-Gated ZSSSL}
-
+	\subsection{Model Generalizability}
+	
 	\begin{figure*}
 		\begin{minipage}[c]{0.75\textwidth}
 			\includegraphics[width=\textwidth]{../figures/fig2.png}
 		\end{minipage}\hfill
 		\begin{minipage}[c]{0.23\textwidth}
-			\caption{Comparison of (top) LLR regularized and (bottom) ZSSSL
+			\caption{Comparison of two training strategies: 
+				(1) slice-by-slice training, 
+				where every slice is trained and tested individually; 
+				(2) single-slice training, 
+				where the unrolled ADMM model is trained on only one slice 
+				and tested on all remaining slices.
+				The top-right image shows the absolute difference 
+				between the reconstructed diffusion-weighted images 
+				at the 10th diffusion direction 
+				between (1) and (2). 
+				The bottom panel plots the mean and standard deviation 
+				of the signal within yellow and green rectangles 
+				in the slide-by-slice training and the single-slice training, 
+				respectively. 
+				No major qualitative or quantitative difference can be seen 
+				between the two training strategies.}
+			\label{FIG:GENERALIZATION}
+		\end{minipage}
+	\end{figure*}
+	
+	\cref{FIG:GENERALIZATION} demonstrates the generalizability 
+	of the proposed ADMM unrolling approach, 
+	i.e., an unrolled ADMM model trained on one single slice 
+	is applicable to all remaining "unseen" slices. 
+	Single-direction diffusion-weighted images from 
+	both the slice-by-slice training 
+	and the single-slice training strategies are displayed. 
+	The absolute difference between these two images 
+	shows no residual structural information, but mainly noise.
+	Further, we plotted the mean and standard deviation 
+	within the selected region-of-interest (colored boxes in \cref{FIG:GENERALIZATION}) 
+	along all diffusion encoding.
+	This again proves the cross-slice generalization 
+	of the proposed ADMM unrolling method.
+	The plotted curves show quantitatively similar values 
+	between the two training strategies.
+	With this, all following results were obtained 
+	utilizing the single-slice training strategy.
+
+	\subsection{Retrospectively Self-Gated ADMM Unrolling}
+
+	\begin{figure*}
+		\begin{minipage}[c]{0.75\textwidth}
+			\includegraphics[width=\textwidth]{../figures/fig3.png}
+		\end{minipage}\hfill
+		\begin{minipage}[c]{0.23\textwidth}
+			\caption{Comparison of (top) LLR regularized 
+				and (bottom) ADMM unrolling
 				reconstruction on 0.7~mm isotropic resolution DWI
 				acquired by Protocol \#1
 				with shot phase estimated from
 				(left) navigators and (middle) imaging echoes, respectively.
 				Zoomed views of the yellow boxes from the self-gated reconstruction
-				are displayed in the right column.
+				are displayed in the right-most column.
 				The use of navigators prolongs the total scan time,
 				and thus increases the sensitivity to motion,
 				as shown in the single-direction diffusion-weighted image 
-				reconstructed with navigated shot phase.
+				reconstructed with navigated shot phase, 
+				where accidental motion occurred during navigator acquisition.
 				The retrospectively self-gated reconstruction discards navigators,
 				and renders sharper diffusion-weighted images. 
-				Compared to LLR, ZSSSL is advantageous
+				Compared to LLR, unrolled ADMM is advantageous
 				in resolving clearer tissue boundaries 
 				in diffusion-weighted images,
 				as indicated by red arrows.}
@@ -675,54 +731,58 @@
 	\end{figure*}
 
 	\cref{FIG:MOTION_RETRO_TRA} demonstrates
-	the efficacy of the self-gated ZSSSL reconstruction
+	the efficacy of the self-gated self-supervised ADMM unrolling reconstruction
 	by comparing to the navigated and self-gated reconstructions 
 	on the first volunteer.
 	Data were acquired by the NAViEPI sequence, 
 	as listed in Protocol \#1 in \cref{TAB:ACQ}.
-	The single-direction DWIs with accidental motion
-	were displayed.
+	The single-direction diffusion-weighted images with accidental motion
+	are displayed.
 
-	The selected DWIs showed residual aliasing-like and
+	The selected diffusion encoding shows residual aliasing-like and
 	severe motion-blurring artifacts
 	in the navigated reconstructions, 
-	including both LLR and ZSSSL.
+	including both LLR regularization and ADMM unrolling.
 	The main reason of these artifacts is that
 	the acquisition of navigators
-	increased the total scan time,
+	increases the total scan time,
 	resulting in higher sensitivity to accidental inter-shot motion.
 	Admittedly, navigators are valuable 
 	in the case of ultra high spatial resolution
 	using many shots, e.g.~3-fold in-plane undersampling and 5-shot acquisition
-	for the in-plane resolution of 0.5~mm \cite{tan_2024_naviepi}.
-	In this experiment, however, the utilization of 3 shots yielded
+	for the in-plane resolution of 0.5~mm \cite{tan_2024_naviepi}, 
+	which led to an in-plane acceleration of $15$ per shot.
+	In contrast, this experiment utilized 3 shots, yielding
 	$6 \times 2$-fold acceleration per shot (refer to Protocol \#1).
-	Such an acceleration rate proved achievable in the self-gated approach.
-	Both LLR and ZSSSL reconstructions supplied geometrically correct DWIs 
+	Such an acceleration rate proves achievable in the self-gated approach.
+	Both LLR regularized and unrolled ADMM reconstructions supply geometrically correct 
+	diffusion-weighted images
 	without noticeable aliasing artifacts. 
-	This in turn indicated that motion corrupted the navigator data 
+	This in turn indicates that motion corrupted the navigator data 
 	in this measurement.
-	Further, self-gated ZSSSL exhibits much clearer tissue delineation
-	in reconstructed DWIs, as indicated by red arrows in the zoomed-in views
+	Further, self-gated ADMM unrolling exhibits much clearer tissue delineation
+	in reconstructed diffusion-weighted images, 
+	as indicated by red arrows in the zoomed-in views
 	in \cref{FIG:MOTION_RETRO_TRA},
 	whereas self-gated LLR suffers from
 	slightly blurry tissue boundaries and ambiguous signals.
 
 	\begin{figure*}
 		\begin{minipage}[c]{0.75\textwidth}
-			\includegraphics[width=\textwidth]{../figures/fig3.png}
+			\includegraphics[width=\textwidth]{../figures/fig4.png}
 		\end{minipage}\hfill
 		\begin{minipage}[c]{0.23\textwidth}
 			\caption{Single-direction diffusion-weighted images 
 				at 0.7~mm isotropic resolution
 				as reconstructed by retrospectively self-gated
-				(left) LLR and (right) ZSSSL
-				in (top) the coronal and (bottom) the sagittal views.
+				(left) LLR and (right) ADMM unrolling
+				in (top) the coronal and (bottom) the sagittal views, respectively.
 				The same diffusion direction as in \cref{FIG:MOTION_RETRO_TRA}
 				is chosen for display.
-				ZSSSL reduces phase ambiguities in the shot-combined reconstruction
-				, thereby rendering clearer tissue delineation and
-				reduced stripping artifacts (as indicated by the red arrows).}
+				ADMM unrolling reduces phase ambiguities 
+				in the shot-combined reconstruction, 
+				thereby rendering clearer tissue delineation and
+				reducing stripping artifacts (as indicated by the red arrows).}
 			\label{FIG:MOTION_RETRO_2}
 		\end{minipage}
 	\end{figure*}
@@ -730,43 +790,43 @@
 	\cref{FIG:MOTION_RETRO_2} shows coronal- and saggital-view 
 	diffusion-weighted images
 	with the same diffusion encoding as in \cref{FIG:MOTION_RETRO_TRA}.
-	As mentioned in \cref{SEC:ZSSSL_GEN}, the ZSSSL model 
+	As mentioned in \cref{SEC:ZSSSL_GEN}, the unrolled ADMM model 
 	was trained using only one slice
-	and then inferred on the remaining slices.
-	The ZSSSL model generalized well across slices.
-	The inference of every slice took only about one minute,
-	whereas the LLR reconstruction took about 48~minutes per slice.
-	More importantly, the self-gated LLR reconstruction exhibited residual
+	and then inferred on all remaining slices.
+	The model generalizes well across slices.
+	The inference of every slice takes only about one minute,
+	whereas the LLR reconstruction takes about 48~minutes per slice.
+	More importantly, the self-gated LLR reconstruction exhibits residual
 	motion-induced stripping artifacts 
-	(refer to red arrows in \cref{FIG:MOTION_RETRO_2})) \cite{chang_2021_musium},
-	whereas the self-gated ZSSSL approach substantially removed these artifacts
-	and supplied high-quality DWI without the need of navigators.
-	Both reconstructions showed $B_1$ field inhomogeneities in the cerebellum region 
+	(refer to red arrows in \cref{FIG:MOTION_RETRO_2}) \cite{chang_2021_musium},
+	whereas the self-gated ADMM unrolling approach substantially removes these artifacts
+	and supplies high-quality diffusion-weighted images without the need of navigators.
+	Both reconstructions show $B_1$ field inhomogeneities in the cerebellum region 
 	and residual spatial distortion in the frontal brain region. 
 	These artifacts, however, are beyond the scope of this work.
 	
 
-	\subsection{Prospectively Self-Gated ZSSSL}
+	\subsection{Prospectively Self-Gated ADMM Unrolling}
 
 	\begin{figure*}
 		\centering
-		\includegraphics[width=\textwidth]{../figures/fig4.png}
+		\includegraphics[width=\textwidth]{../figures/fig5.png}
 		\caption{0.7~mm isotropic mesoscale DWI with 21 volumes at about 10~minutes
 			without the acquisition of navigators.
 			(A) Single-direction diffusion-weighted images and
 			(B) Mean diffusion-weighted images of 20 diffusion directions
 			at three orthogonal orientations are displayed.
 			Diffusion-weighted images were reconstructed by
-			(top) MUSE, (middle) LLR, and (bottom) ZSSSL.
+			(top) MUSE, (middle) LLR, and (bottom) ADMM unrolling.
 			MUSE suffers from severe noise artifacts at such small voxel size.
 			LLR is able to clean up most of the noise,
 			but is still hampered by signal void artifacts in the axial view,
 			which appears as stripping artifacts in coronal and sagittal views
 			(as indicated by red arrows).
-			ZSSSL significantly reduces both noise and signal voids.
+			ADMM unrolling significantly reduces both noise and signal voids.
 			In the mean diffusion-weighted images, LLR shows amplified noise
-			in the cerebellum region,
-			whereas ZSSSL yields more homogeneous signal distributions.}
+			in the cerebellum region (see the blue arrow in the sagittal view),
+			whereas ADMM unrolling yields more homogeneous signal distributions.}
 		\label{FIG:MOTION_PROS}
 	\end{figure*}
 
@@ -774,160 +834,124 @@
 	using the prospectively acquired iEPI data without navigators
 	of the second volunteer
 	(refer to Protocol \#2 in \cref{TAB:ACQ}).
-	The snapshot single diffusion-direction DWIs
-	as well as mean DWIs 
+	The snapshot single diffusion-direction diffusion-weighted images
+	as well as mean diffusion-weighted images 
 	at three orthogonal views were displayed.
 	
-	The MUSE reconstruction suffered from strong noise
+	The MUSE reconstruction suffers from strong noise
 	at such mesoscale voxel size. 
-	The mean DWIs of MUSE improved the visibility of brain tissues, 
+	Its corresponding mean diffusion-weighted images show 
+	improved the visibility of brain tissues, 
 	but the overall image quality is not sufficient.
-	The LLR regularized reconstruction largely reduced noise,
-	but still exhibited suspicious dark signal in the axial view,
-	which appeared as striping artifacts in the coronal and sagittal views
+	The LLR regularized reconstruction largely reduces noise,
+	but still exhibits suspicious dark signal in the axial view,
+	which appears as striping artifacts in the coronal and the sagittal views
 	(refer to the red arrows in \cref{FIG:MOTION_PROS}).
-	These artifacts can be reduced by incorporating adaptive noise estimation
-	in LLR regularization \cite{cordero_2019_cplxdwi}.
 	On the other hand, the LLR regularized reconstruction
-	showed residual noise in the cerebellum region
-	(refer to the blue arrows in \cref{FIG:MOTION_PROS}),
+	shows amplified noise in the cerebellum region
+	(refer to the blue arrow in the sagittal view of \cref{FIG:MOTION_PROS}),
 	which could be caused by the $B_1$ excitation field inhomogeneity
-	at \SI{7}{\tesla}.
-	The above-mentioned striping artifacts were nearly gone 
-	in the ZSSSL reconstruction.
-	Moreover, the DWI from ZSSSL in the axial view 
-	showed clearer diffusion contrasts 
+	at \SI{7}{\tesla}.	
+
+	The above-mentioned striping artifacts are nearly gone 
+	in the unrolled ADMM reconstruction.
+	Moreover, the diffusion-weighted images from ADMM unrolling in the axial view 
+	show clearer diffusion contrasts 
 	and thus better tissue delineation and continuity 
 	in the coronal and the sagittal views.
 	Further, as indicated by the blue arrows in \cref{FIG:MOTION_PROS},
-	the DWI in the sagittal view showed more homogeneous
+	the diffusion-weighted image in the sagittal view shows more homogeneous
 	signal distribution and reduced noise surrounding the cerebellum.
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=\columnwidth]{../figures/fig5.png}
+		\includegraphics[width=\columnwidth]{../figures/fig6.png}
 		\caption{Convergence analysis along the ADMM unrolling training
 			and validation epochs
-			for the ZSSSL results in \cref{FIG:MOTION_PROS}.
+			for the results in \cref{FIG:MOTION_PROS}.
 			Displayed curves are (red solid) the training loss,
 			(red dashed) the validation loss,
-			and (blue solid) the learned regularization strength $\lambda$, respectively.}
+			and (blue solid) the learned regularization strength $\lambda$, respectively.
+			All parameters converge sufficiently and show no over-fitting.}
 		\label{FIG:CONVERGENCE}
 	\end{figure}
 
 	\cref{FIG:CONVERGENCE} displays the training and validation loss
 	as well as the learned regularization strength along epochs 
 	for the results shown in \cref{FIG:MOTION_PROS}.
-	It can be seen that 100 epochs were sufficient for
+	It can be seen that 100 epochs are sufficient for
 	the convergence of ADMM unrolling. 
-	The ZSSSL model converged well along epochs, 
-	and did not show any over-fitting behavior.
-	In addition, the regularization strength converged
+	The model converges well along epochs, 
+	and does not show any over-fitting behavior 
+	(The validation loss decays similarly as the training loss).
+	In addition, the regularization strength converges
 	to the value of about 0.027.
 
 	\begin{figure*}
-		\includegraphics[width=\textwidth]{../figures/fig6.png}
+		\includegraphics[width=\textwidth]{../figures/fig7.png}
 		\caption{Prospectively self-gated DWI reconstruction results
 			at 0.7~mm isotropic resolution. Displayed images are
 			one axial slice at four different diffusion-encoding directions.
-			ZSSSL enables much cleaner delineations of diffusion contrasts
-			than LLR.}
+			ADMM unrolling enables much cleaner delineations of diffusion contrasts
+			than LLR regularized reconstruction.}
 		\label{FIG:SG_ZSSSL_VOL3}
 	\end{figure*}
 
-	\cref{FIG:SG_ZSSSL_VOL3} showed the reconstructed DWIs
+	\cref{FIG:SG_ZSSSL_VOL3} shows the reconstructed diffusion-weighted images
 	at four different diffusion directions based on the iEPI data
-	acquired from the third volunteer.
+	acquired from the third volunteer 
+	(the same subject as in \cref{FIG:GENERALIZATION}).
 	In this experiment, the volunteer was instructed
 	to keep still during scan.
-	Again, the proposed self-gated ZSSSL reconstruction
-	with spatial-diffusion convolution illustrated
+	Again, the proposed self-gated ADMM unrolling reconstruction
+	with spatial-diffusion convolution illustrates
 	superior tissue structure delineation and 
 	diffusion contrasts
 	to the LLR regularized reconstruction. 
-	Similar to the cerebellum region, 
-	the frontal brain region suffers from higher noise 
-	in the LLR reconstruction. 
-	In contrast, the ZSSSL approach generally illustrated 
+	The LLR reconstruction suffers from 
+	amplified noise in the frontal brain region.
+	In contrast, the unrolled ADMM approach generally illustrates 
 	more homogeneous signal and noise distribution 
 	across the field-of-view. 
-	LLR builds upon one single linear transformation 
-	(singular-value decomposition, SVD) and one nonlinear soft thresholding, 
-	whereas the ResNet in ZSSSL builds upon 
-	multiple convolutions and nonlinear activation functions. 
+	While LLR builds upon one single linear transformation 
+	(singular-value decomposition, SVD) and 
+	one nonlinear operation (soft thresholding) \cite{cai_2010_svt}, 
+	the ResNet in ADMM unrolling builds upon 
+	multiple two-dimensional convolutions and nonlinear activation functions. 
 	Therefore, deep neural networks enable more in-depth exploration 
 	of key features in the high-dimensional data.
 
 
-	\subsection{Model Generalizability}
-
-	\begin{figure*}
-		\begin{minipage}[c]{0.75\textwidth}
-			\includegraphics[width=\textwidth]{../figures/fig7.png}
-		\end{minipage}\hfill
-		\begin{minipage}[c]{0.23\textwidth}
-			\caption{Comparison of two training strategies: 
-				(1) slice-by-slice training, 
-				where every slice is trained and tested individually; 
-				(2) single-slice training, 
-				where the ZSSSL model is trained on only one slice 
-				and tested on all remaining slices.
-				The top-right image shows the absolute difference 
-				between the reconstructed DWIs 
-				at the 10th diffusion direction 
-				between (1) and (2). 
-				The bottom panel plots the mean and standard deviation 
-				of the signal within yellow and green rectangles 
-				in the slide-by-slice training and the single-slice training, 
-				respectively. 
-				No major qualitative or quantitative difference can be see 
-				between the two training strategies.}
-			\label{FIG:GENERALIZATION}
-		\end{minipage}
-	\end{figure*}
-	
-	Based on the data shown in \cref{FIG:SG_ZSSSL_VOL3}, 
-	\cref{FIG:GENERALIZATION} demonstrated the generalizability 
-	of the proposed ADMM unrolling approach. 
-	Single-direction DWIs from both the slice-by-slice training 
-	and the single-slice training strategies are displayed. 
-	The difference image between these two DWIs 
-	shows no residual structural information, but mainly noise.
-	Further, we plotted the mean and standard deviation 
-	within the selected region-of-interest along all diffusion encodings.
-	The plotted curves show quantitatively similar values 
-	between the two reconstructions.
 
 	% ============================== %
 	\section{Discussion}
 
-	This work reported a novel self-gated zero-shot self-supervised learning approach
+	This work reported a novel self-gated self-supervised learning approach 
+	based on ADMM unrolling
 	for multi-shot undersampled iEPI acquisition and high-resolution DWI reconstruction.
-	The self-gated ZSSSL achieved whole brain diffusion encoding in 21 directions
-	with a $b$-value of \SI{1000}{s/mm^2}
+	The self-gated ADMM unrolling achieved whole brain DWI 
+	with 20 diffusion-encoded directions and a $b$-value of \SI{1000}{s/mm^2}
 	at \SI{0.7}{mm} isotropic resolution,
 	all within a scan time of less than 10 minutes.
-	Technically, this work unrolled ADMM to perform ZSSSL training and testing.
-	Likewise, ADMM was employed to solve the inverse problem in \cref{EQU:INV}
-	with LLR regularization.
-	This approach assures fair comparison among different regularization methods.
+	For comparison, the compressed sensing reconstruction with 
+	locally-low rank regularization was implemented also with the generic ADMM algorithm.
+	Thus, our work assured fair comparison among different regularization methods.
 
-	The proposed self-gated ZSSSL approach is well-suited 
+	The proposed self-gated ADMM unrolling approach is well-suited 
 	for online reconstruction deployment.
 	Firstly, it requires much shorter acquisition time than
 	the conventional MUSE approach with fully-sampled iEPI and
 	our previous NAViEPI method.
-	Secondly, ZSSSL does not require large-scale fully-sampled data for training.
-	Instead, the training of ZSSSL is scan specific.
-	Last but not the least,
-	the trained ZSSSL model is applicable to different undersampling factors
-	and to different slices.
-	Fourth, the inference time of ZSSSL is much
+	Secondly, it does not require large-scale fully-sampled data for training.
+	Instead, its training is scan specific and requires only one slice.
+	The trained ADMM unrolling model is applicable to different slices.
+	Third, the inference time of the trained model is much
 	shorter compared to the LLR regularization approach.
 
 	We observed that stripping-type motion artifacts occurred more frequently
-	with sub-millimeter isotropic resolution DWI.
-	In addition, sub-millimeter isotropic voxel resulted in higher noise in DWI.
+	in the sub-millimeter isotropic resolution DWI regime.
+	In addition, sub-millimeter isotropic voxel 
+	resulted in higher noise in diffusion-weighted images.
 	This makes sense, as scans with reduced slice thickness are more susceptible to
 	shot-to-shot phase variations.
 	To enable sub-millimeter mesoscale DWI,
@@ -940,46 +964,67 @@
 	Meanwhile, Hadamard encoding of the slices within a slab gained SNR
 	in the linear inverse reconstruction.
 	However, it has been reported that gSlider has stricter requirements
-	on $B_0$ and $B_1$ field homogeneity 
+	on $B_0$ and $B_1$ field homogeneities 
 	and shows residual slab boundary artifacts
 	\cite{dai_2021_smslab}.
-	In contrast, the proposed self-gated ZSSSL method
+	In contrast, the proposed self-gated self-supervised ADMM unrolling method
 	requires no such advanced slab encoding,
 	while achieves sub-millimeter resolution
 	at a clinical feasible reconstruction time.
 	Thus, the proposed method can be useful for the probe to high-resolution
 	brain micro-structures in the human connectome project \cite{huang_2021_hcp2}.
+	On the other hand, since unrolled algorithms are flexible to 
+	MR physics modeling (e.g., the forward operator $\mathcal{A}$), 
+	the proposed ADMM unrolling can be extended 
+	to incorporate with the gSlider encoding model for enhanced SNR performance.
 
-	This work demonstrated the capability of self-gated ZSSSL in
+	This work demonstrated the capability of self-gated ADMM unrolling in
 	reconstructing \SI{0.7}{mm} isotropic resolution 3-shot iEPI DWI
 	with $(6 \times 2)$-fold acceleration per shot.
 	However, we also observed that the self-gated approach
-	failed to recover aliasing-free DWI
+	failed to recover aliasing-free diffusion-weighted images
 	in the case of higher acceleration factors
 	(e.g. the $0.5\times0.5\times2.0$~\si{mm^3} DWI data
 	with an acceleration of $15\times2$ per shot).
 	To address this issue, acquiring shot-to-shot phase navigators 
 	helps with the shot-combined DWI reconstruction \cite{tan_2024_naviepi}.
+	Therefore, the utilization of navigator acquisition and 
+	advanced deep learning reconstruction should be application oriented.
+	For ultra-high spatial resolution that requires many shots, 
+	navigator is needed. 
+	For the 0.7~mm resolution with 3 shots as shown in this work,
+	the self-gated acquisition is beneficial of reducing scan time, 
+	given the superior performance of the proposed ADMM unrolling reconstruction.
 	Alternatively, employing optimized trajectories
 	with a more densely-sampled $k$-space central region
 	could help better estimate shot phase variations
 	\cite{liu_2004_diff_spiral,dai_2023_epti-diff}.
 
-	
-
 	This work did not incorporate off-resonance correction in the reconstruction.
 	As a logic extension, the multi-shot sequence can be modified
 	to encode dynamic $B_0$ field variation, which can then be employed in the SENSE-based forward operator and reconstruction. An established approach
 	is known as the blip-up/down encoding \cite{zahneisen_2017_blipud}.
-	This approach can potentially be combined with the model-based reconstruction
-	for joint reconstructions of DWIs and $B_0$ field maps \cite{tan_2022_meco}.
+	This approach requires the acquisition of two images 
+	with opposing phase-encoding polarities (i.e., blip-up and blip-down) 
+	for the computation of $B_0$ field maps.
+	An alternative approach is to iteratively update $B_0$ field 
+	based on the phase difference among acquired multiple echoes \cite{tan_2022_meco}.
+	This approach does not require the pre-determination of $B_0$ field, 
+	but poses higher computational demand in the inversion course of phase increments 
+	from every echo.
 
 	% ============================== %
 	\section{Conclusion}
 
-	In this work, we proposed a self-gated zero-shot self-supervised learning
+	In this work, we proposed a self-gated self-supervised learning
 	reconstruction framework based on ADMM unrolling
-	for high-resolution and motion-robust DWI.
+	for high-resolution and motion-robust diffusion-weighted imaging 
+	at ultra-high field.
+	Based on the mechanism of data splitting (cross validation), 
+	our proposed ADMM unrolling requires only one single slice for training 
+	and is generalized cross-slice. 
+	Plus, ADMM unrolling renders ultra-short inference / reconstruction time, 
+	and is thus feasible for clinical translation.
 
 
 	% ============================== %
