@@ -88,17 +88,17 @@
 
 	% Keep the abstract to 250 words or less.
 	\begin{abstract}
-		This work introduces a self-gated self-supervised learning reconstruction framework for navigator-free, high-resolution, and motion-robust diffusion-weighted imaging (DWI) based on undersampled multi-shot interleaved echo-planar imaging (iEPI) acquisition. Specifically, the proposed self-supervised learning unrolls the alternating direction method of multipliers (ADMM). The ADMM unrolling alternatively minimizes a physics-guided data-consistency term and a learned regularization function. Two-dimensional residual neural network (ResNet) is employed as the learnable regularization to leverage redundancy in the spatial-diffusion dimension.
+		This work introduces a self-gated self-supervised learning joint reconstruction framework for navigator-free, high-resolution, and motion-robust diffusion-weighted imaging (DWI) based on undersampled multi-shot interleaved echo-planar imaging (iEPI) acquisition. Specifically, the proposed self-supervised learning unrolls the alternating direction method of multipliers (ADMM). The ADMM unrolling alternatively minimizes a physics-guided data-consistency term and a learned regularization function. Two-dimensional residual neural network (ResNet) is employed as the learnable regularization to leverage redundancy in the spatial-diffusion dimension.
 		First, we perform a computational experiment in which ADMM unrolling is trained with only one multi-band slice out of the volumetric brain DWI acquisition, and the trained model is then inferred on all remaining slices. This experiment demonstrates the model's cross-slice generalization feature, where the trained model is applicable to "unseen" slices.
 		Second, the proposed self-gated ADMM unrolling is validated with both retrospectively and prospectively acquired data at 0.7 mm isotropic resolution. Our method outperforms both multiplexed sensitivity-encoding (MUSE) and compressed sensing with locally-low rank (LLR) regularization in terms of image sharpness, tissue continuity and motion robustness.
 		Third, ADMM unrolling converges sufficiently in 100 epochs, 
 		and enables the learning of the regularization strength.
-		Fourth, while ADMM unrolling requires up to eight hours training per slice, its inference time is just one minute. In comparison, LLR requires about an hour per slice.
+		Fourth, although ADMM unrolling requires up to eight hours training per slice, its inference time is just one minute. In comparison, LLR requires about an hour per slice.
 		Overall, self-gated self-supervised ADMM unrolling enables undersampled multi-shot iEPI acquisition without the need of navigators, providing sub-millimeter DWI at clinically feasible reconstruction times. The source code is publicly available at:~\url{https://github.com/ZhengguoTan/DeepDWI}.
 	\end{abstract}
 
 	\begin{IEEEkeywords}
-	Diffusion weighted imaging, Magnetic resonance imaging, Image reconstruction, Algorithm unrolling, Self-supervised learning, End-to-end learning in medical imaging, Machine learning
+	Magnetic resonance imaging, MR physics, Diffusion weighted imaging, Image reconstruction, Machine learning, End-to-end learning in medical imaging, Inverse methods, Optimization, Image acquisition
 	\end{IEEEkeywords}
 
 	% ============================== %
@@ -515,7 +515,8 @@
 			the loss function calculation during validation.
 			\textbf{(B)} and \textbf{(C)} show the flowchart
 			for the training and the validation of an unrolled ADMM model, respectively.
-			Note that the ResNet parameters $\omega$ are updated during training,
+			Note that the ResNet parameters $\omega$ are updated 
+			via ADAM \cite{kingma_2015_adam} during training,
 			but remain fixed during the validation step.
 			\textbf{(D)} A stack of diffusion-weighted images 
 			is input into ResNet during ADMM unrolling.}
