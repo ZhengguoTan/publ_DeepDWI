@@ -4,9 +4,9 @@ Zhengguo Tan, Patrick A Liebig, Annika Hofmann, Yun Jiang, Vikas Gulani, Frederi
 
 ## SYNOPSIS & IMPACT
 
-**Motivation:** The lack of fully-sampled data hinders the use of advanced deep learning techniques for diffusion-weighted imaging (DWI).
+**Motivation:** The lack of fully-sampled data hinders the developments of advanced deep learning techniques for diffusion-weighted imaging (DWI).
 
-**Goal:** To develop an efficient self-supervised algorithm unrolling technique for 0.7 mm isotropic resolution DWI.
+**Goal:** To develop an efficient self-supervised algorithm unrolling technique for high-resolution DWI.
 
 **Approach:** We unroll the alternating direction method of multipliers (ADMM) to perform scan-specific self-supervised learning for deep DWI reconstruction.
 
@@ -16,27 +16,31 @@ Zhengguo Tan, Patrick A Liebig, Annika Hofmann, Yun Jiang, Vikas Gulani, Frederi
 
 ## INTRODUCTION
 
-High-dimensional magnetic resonance imaging (HD-MRI) is a rapidly advancing field, with examples including magnetic resonance spectroscopic imaging (MRSI), diffusion-weighted imaging (DWI), and quantitative parameter mapping. Despite its potential, state-of-the-art HD-MRI often requires prolonged acquisition times. While accelerated acquisition techniques, such as those using advanced compressed sensing reconstruction, can shorten acquisition, they come with the trade-off of increased computational demands.
+High-dimensional magnetic resonance imaging (HD-MRI) is a rapidly advancing field, with examples including magnetic resonance spectroscopic imaging (MRSI) [1], diffusion-weighted imaging (DWI) [2], and quantitative parameter mapping [3,4]. Despite its potential, state-of-the-art HD-MRI often requires prolonged acquisition times. While accelerated acquisition techniques, such as those using advanced compressed sensing reconstruction, can shorten acquisition, they come with the trade-off of increased computational demands.
 
 The contribution of this work includes:
 
-* We unroll ADMM to perform scan-specific self-supervised learning
-		and incorporate self-gated shot-to-shot phase variation estimation
-		into the data-consistency term for deep diffusion-weighted imaging reconstruction.
-* We demonstrate that the trained ADMM unrolling model from one single slice
-		can be applied to all other slices.
-		This significantly reduces the training time.
-* We achieve navigator-free high-resolution DWI with 21 diffusion-encoding
-		directions at 0.7 mm isotropic resolution,
-		a scan time of under 10 minutes, and a reconstruction time of about 1 minute per slice.
+* We unroll ADMM [5] to perform scan-specific self-supervised learning and incorporate self-gated shot-to-shot phase variation estimation into the data-consistency term for deep diffusion-weighted imaging reconstruction.
+* We demonstrate that the trained ADMM unrolling model from one single slice can be applied to all other slices. This significantly reduces the training time.
+* We achieve navigator-free high-resolution DWI with 21 diffusion-encoding directions at 0.7 mm isotropic resolution, a scan time of under 10 minutes, and a reconstruction time of about 1 minute per slice.
 
 ## METHODS
 
-### Data Acquisition and Forward Modeling
+### Data Acquisition
 
-Three young healthy volunteers with written informed consent approved by the local ethics committee were scaned on a clinical 7T MR system (MAGNETOM Terra, Siemens, Erlangen, Germany). The scanner was equipped with a 32-channel head coil (NOVA Medical, Wilmington, MA, USA) and the XR-gradient system. We implemented a mesoscal high-resolution DWI protocol using our previously proposed NAViEPI sequence [x] with the following parameters: FOV 200 mm, matrix size 286 x 286 x 176, voxel size 0.7 mm $^3$, 3-shot interleaved EPI with 2x2-fold acceleration and 5/8 partial Fourier, bandwidth 972 Hz/pixel, TR/TE/ESP 8900/58/1.17 ms, and a total scan time of 10 minutes for 21 volumes (1 non-diffusion-weighted and 20 diffusion-encoded) with the b-value of 1000 s/mm $^2$.
+A total of four volunteers with written informed consent approved by the local ethics committee participated in the study.
 
-Joint k-q-slice reconstruction [x](tan) formulates the forward model as,
+#### Brain DWI at 7T
+
+Three volunteers were scanned at 7T (MAGNETOM Terra, Siemens, Erlangen, Germany). The scanner was equipped with a 32-channel head coil (NOVA Medical, Wilmington, MA, USA) and the XR-gradient system. We implemented a mesoscal high-resolution DWI protocol with NAViEPI [6] with the following parameters: FOV 200 mm, matrix size 286 x 286 x 176, voxel size 0.7 mm $^3$, 3-shot interleaved EPI with 2x2-fold acceleration and 5/8 partial Fourier, bandwidth 972 Hz/pixel, TR/TE/ESP 8900/58/1.17 ms, and a total scan time of 10 minutes for 21 volumes (1 non-diffusion-weighted and 20 diffusion-encoded) with the b-value of 1000 s/mm$^2$.
+
+#### Prostate DWI at 3T
+
+One volunteer was scanned at 3T (MAGNETOM Vida, Siemens, Erlangen, Germany) with the clinical prostate DWI protocol utilizing single-shot EPI. The acquisition parameters were FOV 200 mm, matrix size 171 x 114 x 35, slice thickness 4 mm, 2-fold in-plane acceleration, TR/TE 6400/91 ms, and the 3-scan trace mode with b-value up to 1600 s/mm$^2$ and a total of 97 volumes. ADC was obtained as the average of three diagonal tensors, which was fitted from diffusion-weighted images with b-values of 100 and 800 s/mm$^2$.
+
+### Forward Modeling
+
+Joint k-q-slice reconstruction [6] formulates the forward model as,
 
 $$\mathcal{A}(\mathbf{x}) = \mathbf{P \Sigma \Theta F S \Phi} \mathbf{x}$$
 
@@ -46,11 +50,11 @@ With the forward model ($\mathcal{A}$), the joint reconstruction problem reads,
 
 $$\text{argmin}_{\mathbf{x}} \left\lVert \mathbf{y} - \mathcal{A}(\mathbf{x}) \right\rVert _2^2 + \lambda \mathcal{R}(\mathbf{x})$$
 
-where $\mathbf{y}$ is the measured k-space data. $\mathcal{R}(\mathbf{x})$ is the regularization function, which can be either nuclear norms of the local spatial-diffusion patches for LLR-regularized iterative reconstruction or deep neural networks for unrolled reconstruction. In both cases, we employ ADMM to assure fair comparison. In the case of ADMM unrolling, we employ the 2D ResNet [x] as the regularization function.
+where $\mathbf{y}$ is the measured k-space data. $\mathcal{R}(\mathbf{x})$ is the regularization function, which is either nuclear norms of the local spatial-diffusion patches for LLR-regularized iterative reconstruction or deep neural networks for unrolled reconstruction. In both cases, we employ ADMM to assure fair comparison. For ADMM unrolling, we employ the 2D ResNet [7] as the regularization function.
 
 ### Self-Gated Self-Supervised ADMM Unrolling
 
-![fig1](./figures/fig1.png)
+![fig1](../origin/figures/fig1.png)
 > **Figure 1.** Illustration of the key components in ADMM unrolling.
 			**(A)** The sampling mask $P$ in Equation (1) was
 			uniformly split into three disjoint sets:
@@ -68,35 +72,17 @@ where $\mathbf{y}$ is the measured k-space data. $\mathcal{R}(\mathbf{x})$ is th
 			**(D)** A stack of diffusion-weighted images
 			is input into ResNet during ADMM unrolling.
 
-Figure 1 illustartes crucial components of ADMM unrolling.
-Inspired by Yaman et al. [x], our proposed ADMM unrolling is scan specific,
-i.e., the model is trained on one single dataset.
-The data sampling mask $\mathbf{P}$
-is split into three disjoint sets,
-the training mask $\mathbf{T}$ for the data consistency term,
-the training loss mask $\mathbf{L}$ for the loss function calculation,
-and the validation loss mask $\mathbf{V}$.
-Each set consists of 12 repetitions constructed via random uniform sampling
-of the data mask $\mathbf{P}$.
-In each training epoch, every repetition is looped through
-in order to update the ResNet parameters $\omega$.
-Plus, the validation step is performed after every training epoch
-to update the minimal validation loss.
-If the validation loss does not reduce for 12 consecutive epochs or
-if 100 epochs are reached, the training is terminated.
-Figure 1 (D) shows that the 2D convolution in ResNet is performed
-in the spatial-diffusion dimension,
-with the diffusion encoding as the convolution channel.
+Figure 1 illustartes crucial components of ADMM unrolling. Inspired by Yaman et al. [8], our proposed ADMM unrolling is scan specific, i.e., the model is trained on one single dataset. The data sampling mask $\mathbf{P}$ is split into three disjoint sets, the training mask $\mathbf{T}$ for the data consistency term, the training loss mask $\mathbf{L}$ for the loss function calculation, and the validation loss mask $\mathbf{V}$. Each set consists of 12 repetitions constructed via random uniform sampling of the data mask $\mathbf{P}$. In each training epoch, every repetition is looped through to update the ResNet parameters $\omega$. Plus, the validation step is performed after every training epoch to update the minimal validation loss. If the validation loss does not reduce for 12 consecutive epochs or if 100 epochs are reached, the training is terminated. Figure 1 (D) shows that the 2D convolution in ResNet is performed in the spatial-diffusion dimension, with the diffusion encoding as the convolution channel.
 
 ### Computation
 
-All reconstructions were done on a single A100 SXM4/NVLink GPU with 80GB memory (NVIDIA, Santa Clara, CA, USA). Computing infrastructure was provided by the Erlangen National High Performance Computing Center and in part supported through computational resources and services by Advanced Research Computing at the University of Michigan, Ann Arbor.
+All reconstructions were done on a A100 SXM4/NVLink GPU with 80GB memory (NVIDIA, Santa Clara, CA, USA). Computing infrastructure was provided by the Erlangen National High Performance Computing Center and in part supported through computational resources and services by Advanced Research Computing at the University of Michigan, Ann Arbor.
 
-## RESULTS
+## RESULTS AND DISCUSSION
 
 ### Model Generalizability
 
-![fig2](./figures/fig2.png)
+![fig2](../origin/figures/fig2.png)
 > **Figure 2.**
 Comparison of two training strategies:
 (1) slice-by-slice training,
@@ -134,7 +120,7 @@ between the two training strategies.
 
 ### Self-Gated Self-Supervised ADMM Unrolling
 
-![fig3](./figures/fig3.png)
+![fig3](../origin/figures/fig3.png)
 > **Figure 3.**
 Comparison of (top) LLR regularized
 and (bottom) ADMM unrolling
@@ -172,7 +158,7 @@ as indicated by red arrows in the zoomed-in views,
 whereas self-gated LLR suffers from
 slightly blurry tissue boundaries and ambiguous signals.
 
-![fig4](./figures/fig4.png)
+![fig4](../origin/figures/fig4.png)
 > **Figure 4.**
 Single-direction diffusion-weighted images
 at 0.7~mm isotropic resolution
@@ -194,7 +180,7 @@ was trained using only one slice
 and then inferred on all remaining slices.
 The model generalizes well across slices.
 The inference of every slice takes only about one minute,
-whereas the LLR reconstruction takes about 48~minutes per slice.
+whereas the LLR reconstruction takes about 48 minutes per slice.
 More importantly, the self-gated LLR reconstruction exhibits residual
 motion-induced stripping artifacts
 (refer to red arrows ),
@@ -203,16 +189,31 @@ and supplies high-quality diffusion-weighted images without the need of navigato
 
 ### Prostate DWI
 
+![fig5](./figures/fig5.png)
+> **Figure 5.** Comparison of reconstructions for prostate DWI: parallel imaging as SENSE, compressed sensing with LLR regularization, and ADMM unrolling. b0, diffusion-weighted images at different b-values, and ADC maps are displayed from left to right. Unlike clinical protocals which may involve the use of dedicated filtering, the ADC maps were fitted directly from reconstructed diffusion-weighted images and displayed without filtering. Both LLR and ADMM unrolling show strong denoising capabilities.
 
-
-## DISCUSSION
+Figure 5 shows preliminary results on prostate DWI reconstructions. When compared to parallel imaging as SENSE [9], both LLR and ADMM unrolling show strong denoising. ADMM unrolling illustrates slightly better tissue contrast in the ADC map.
 
 ## CONCLUSION
 
+We proposed a self-gated self-supervised learning reconstruction for high-resolution and motion-robust DWI. Based on the mechanism of data spliting (cross validation), our proposed ADMM unrolling requires only one slice for training and is generalized cross-slice.
+
 ## REFERENCES
 
-[] Tan Z, Liebig PA, Heidemann RM, Laun FB, Knoll F. Accelerated diffusion-weighted magnetic resonance imaging at 7 T: Joint reconstruction for shift-encoded navigator-based interleaved echo planar imaging (JETS-NAViEPI). Imaging Neuroscience 2024;2:1-15.
+[1] Brown TR, Kincaid BM, Uğurbil K. NMR chemical shift imaging in three dimensions. Proc Natl Acad Sci USA 1982;79:3523-3536.
 
-[] He K, Zhang X, Ren S, Sun J. Deep residual learning for image recognition. in IEEE Conference on Computer Vision and Pattern Recognition (CVPR'16). 2016:770-778.
+[2] Jones DK. Diffusion MRI: Theory, methods, and applications. Oxford University Press 2010.
 
-[] Yaman B, Hosseini SAH, Akçakaya M. Zero-shot self-supervised learning for MRI reconstruction. in 10th International Conference on Learning Representations (ICLR'10). 2022.
+[3] Doneva M, Boernert P, Eggers H, Stehning C, Senegas J, Mertins A. Compressed sensing for magnetic resonance parameter mapping. Magn Reson Med 2010;64:1114-1120.
+
+[4] Ma D, Gulani V, Seiberlich N, Liu K, Sunshine JL, Duerk JL, Griswold MA. Magnetic resonance fingerprinting. Nature 2013;495:187-192.
+
+[5] Boyd S, Parikh N, Chu E, Peleato B, Eckstein J. Distributed optimization and statistical learning via the althernating direction method of multipliers. Foundations and Trends in Machine Learning 2010;3:1-122.
+
+[6] Tan Z, Liebig PA, Heidemann RM, Laun FB, Knoll F. Accelerated diffusion-weighted magnetic resonance imaging at 7 T: Joint reconstruction for shift-encoded navigator-based interleaved echo planar imaging (JETS-NAViEPI). Imaging Neuroscience 2024;2:1-15.
+
+[7] He K, Zhang X, Ren S, Sun J. Deep residual learning for image recognition. in IEEE Conference on Computer Vision and Pattern Recognition (CVPR'16). 2016:770-778.
+
+[8] Yaman B, Hosseini SAH, Akçakaya M. Zero-shot self-supervised learning for MRI reconstruction. in 10th International Conference on Learning Representations (ICLR'10). 2022.
+
+[9] Pruessmann KP, Weiger M, Boernert P, Boesiger P. Advances in sensitivity encoding with arbitrary k-space trajectories. Magn Reson Med 2001;46:638-651.
