@@ -28,7 +28,7 @@ The contribution of this work includes:
 
 ### Data Acquisition
 
-A total of four volunteers with written informed consent approved by the local ethics committee participated in the study.
+Three volunteers and one patient with written informed consent approved by the local ethics committee participated in the study.
 
 #### Brain DWI at 7T
 
@@ -36,7 +36,7 @@ Three volunteers were scanned at 7T (MAGNETOM Terra, Siemens, Erlangen, Germany)
 
 #### Prostate DWI at 3T
 
-One volunteer was scanned at 3T (MAGNETOM Vida, Siemens, Erlangen, Germany) with the clinical prostate DWI protocol utilizing single-shot EPI. The acquisition parameters were FOV 200 mm, matrix size 171 x 114 x 35, slice thickness 4 mm, 2-fold in-plane acceleration, TR/TE 6400/91 ms, and the 3-scan trace mode with b-value up to 1600 s/mm$^2$ and a total of 97 volumes. ADC was obtained as the average of three diagonal tensors, which was fitted from diffusion-weighted images with b-values of 100 and 800 s/mm$^2$.
+One patient was scanned at 3T (MAGNETOM Vida, Siemens, Erlangen, Germany) with the clinical prostate DWI protocol utilizing single-shot EPI. The acquisition parameters were FOV 200 mm, matrix size 171 x 114 x 35, slice thickness 4 mm, 2-fold in-plane acceleration, TR/TE 6400/91 ms, and the 3-scan trace mode with b-value up to 1600 s/mm$^2$ and a total of 97 volumes. ADC was obtained as the average of three diagonal tensors, which was fitted from diffusion-weighted images with b-values of 100 and 800 s/mm$^2$.
 
 ### Forward Modeling
 
@@ -55,22 +55,7 @@ where $\mathbf{y}$ is the measured k-space data. $\mathcal{R}(\mathbf{x})$ is th
 ### Self-Gated Self-Supervised ADMM Unrolling
 
 ![fig1](../origin/figures/fig1.png)
-> **Figure 1.** Illustration of the key components in ADMM unrolling.
-			**(A)** The sampling mask $P$ in Equation (1) was
-			uniformly split into three disjoint sets:
-			the training mask $\mathbf{T}$ used for
-			the data consistency term during training,
-			the train loss mask $\mathbf{L}$ used for
-			the loss function calculation during training, and
-			the validation loss mask $\mathbf{V}$ used for
-			the loss function calculation during validation.
-			**(B)** and **(C)** show the flowchart
-			for the training and the validation of an unrolled ADMM model, respectively.
-			Note that the ResNet parameters $\omega$ are updated
-			via ADAM during training,
-			but remain fixed during the validation step.
-			**(D)** A stack of diffusion-weighted images
-			is input into ResNet during ADMM unrolling.
+> **Figure 1.** Key components in ADMM unrolling. (A) The sampling mask P was uniformly split into three disjoint sets: the training mask T for the data consistency term during training, the train loss mask L for the loss function calculation during training, and the validation loss mask V for the loss function calculation during validation. (B) and (C) show the flowchart for the training and the validation, respectively. The ResNet parameters are updated via ADAM during training, but remain fixed during validation. (D) All diffusion-weighted images are input to ResNet in ADMM unrolling.
 
 Figure 1 illustartes crucial components of ADMM unrolling. Inspired by Yaman et al. [8], our proposed ADMM unrolling is scan specific, i.e., the model is trained on one single dataset. The data sampling mask $\mathbf{P}$ is split into three disjoint sets, the training mask $\mathbf{T}$ for the data consistency term, the training loss mask $\mathbf{L}$ for the loss function calculation, and the validation loss mask $\mathbf{V}$. Each set consists of 12 repetitions constructed via random uniform sampling of the data mask $\mathbf{P}$. In each training epoch, every repetition is looped through to update the ResNet parameters $\omega$. Plus, the validation step is performed after every training epoch to update the minimal validation loss. If the validation loss does not reduce for 12 consecutive epochs or if 100 epochs are reached, the training is terminated. Figure 1 (D) shows that the 2D convolution in ResNet is performed in the spatial-diffusion dimension, with the diffusion encoding as the convolution channel.
 
@@ -83,23 +68,7 @@ All reconstructions were done on a A100 SXM4/NVLink GPU with 80GB memory (NVIDIA
 ### Model Generalizability
 
 ![fig2](../origin/figures/fig2.png)
-> **Figure 2.**
-Comparison of two training strategies:
-(1) slice-by-slice training,
-where every slice is trained and tested individually;
-(2) single-slice training,
-where the unrolled ADMM model is trained on only one slice
-and tested on all remaining slices.
-The top-right image shows the absolute difference
-between the reconstructed diffusion-weighted images
-at the 10th diffusion direction
-between (1) and (2).
-The bottom panel plots the mean and standard deviation
-of the signal within yellow and green rectangles
-in the slide-by-slice training and the single-slice training,
-respectively.
-No major qualitative or quantitative difference can be seen
-between the two training strategies.
+> **Figure 2.** Comparison of two training strategies: (1) slice-by-slice training, where every slice is trained and tested individually; (2) single-slice training, where the unrolled ADMM model is trained on only one sliceand tested on all remaining slices. The top-right image shows the absolute difference between the reconstructed single-dir diffusion-weighted images between (1) and (2). The bottom panel plots the mean and standard deviation of the signal within color boxes in the two training strategies. No major qualitative or quantitative difference can be seen.
 
 Figure 2 demonstrates the generalizability
 of the proposed ADMM unrolling approach,
@@ -121,26 +90,7 @@ between the two training strategies.
 ### Self-Gated Self-Supervised ADMM Unrolling
 
 ![fig3](../origin/figures/fig3.png)
-> **Figure 3.**
-Comparison of (top) LLR regularized
-and (bottom) ADMM unrolling
-reconstruction on 0.7~mm isotropic resolution DWI
-acquired by Protocol \#1
-with shot phase estimated from
-(left) navigators and (middle) imaging echoes, respectively.
-Zoomed views of the yellow boxes from the self-gated reconstruction
-are displayed in the right-most column.
-The use of navigators prolongs the total scan time,
-and thus increases the sensitivity to motion,
-as shown in the single-direction diffusion-weighted image
-reconstructed with navigated shot phase,
-where accidental motion occurred during navigator acquisition.
-The retrospectively self-gated reconstruction discards navigators,
-and renders sharper diffusion-weighted images.
-Compared to LLR, unrolled ADMM is advantageous
-in resolving clearer tissue boundaries
-in diffusion-weighted images,
-as indicated by red arrows.
+> **Figure 3.** Comparison of (top) LLR and (bottom) ADMM unrolling reconstruction on 0.7mm isotropic resolution DWI with shot phase estimated from (left) navigators and (middle) imaging echoes, respectively. The use of navigators prolongs the total scan time, and thus increases the sensitivity to motion, as shown in navigated reconstruction. The retrospectively self-gated reconstruction discards navigators, and renders sharper diffusion-weighted images. Compared to LLR, unrolled ADMM is advantageous in resolving clearer tissue boundariesin diffusion-weighted images.
 
 Figure 3 demonstrates
 the efficacy of the self-gated self-supervised ADMM unrolling reconstruction.
@@ -159,18 +109,7 @@ whereas self-gated LLR suffers from
 slightly blurry tissue boundaries and ambiguous signals.
 
 ![fig4](../origin/figures/fig4.png)
-> **Figure 4.**
-Single-direction diffusion-weighted images
-at 0.7~mm isotropic resolution
-as reconstructed by retrospectively self-gated
-(left) LLR and (right) ADMM unrolling
-in (top) the coronal and (bottom) the sagittal views, respectively.
-The same diffusion direction as in Figure 3
-is chosen for display.
-ADMM unrolling reduces phase ambiguities
-in the shot-combined reconstruction,
-thereby rendering clearer tissue delineation and
-reducing stripping artifacts (as indicated by the red arrows).
+> **Figure 4.** Single-direction diffusion-weighted images at 0.7mm isotropic resolution as reconstructed by retrospectively self-gated (left) LLR and (right) ADMM unrolling in (top) the coronal and (bottom) the sagittal views, respectively. The same diffusion direction as in Figure 3 is chosen for display. ADMM unrolling reduces phase ambiguitiesin the shot-combined reconstruction, thereby rendering clearer tissue delineation andreducing stripping artifacts (as indicated by the red arrows).
 
 Figure 4 shows coronal- and saggital-view
 diffusion-weighted images
