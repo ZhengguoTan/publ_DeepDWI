@@ -4,10 +4,10 @@
 %% This file is copyright by SPi Technologies Ltd. All rights reserved.
 %%
 %% Author:       SPi, LaTeX Development Team, Chennai (India)
-%% Created On: 
+%% Created On:
 %% Last Modified By:
 %% Last Modified On:
-%% Description:  Class file to support authoring template in LaTeX typesetting 
+%% Description:  Class file to support authoring template in LaTeX typesetting
 %%               for Wiley Journals
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -27,8 +27,8 @@
 \newif\if@hyperrefon  \@hyperrefonfalse%
 \newif\ifbibunnumbered\global\bibunnumberedtrue%
 \newif\ifproof\global\prooffalse%
-\newif\ifEqnSpan\global\EqnSpantrue% 
-\newif\if@dblspace\global\@dblspacefalse% 
+\newif\ifEqnSpan\global\EqnSpantrue%
+\newif\if@dblspace\global\@dblspacefalse%
 \newif\if@linenumberon%
 \newif\if@font@stix\global\@font@stixfalse%
 \newif\if@large@design\global\@large@designtrue%
@@ -451,7 +451,7 @@ false setoverprint}}
 \setbox\BXbox=\vbox{\hsize=\BXhsize\hsize=\BXhsize\fbox{\vbox{#1}}}%
 \box\BXbox%
 \endgroup}%
-	
+
 \long\def\BXboxfull#1{\begingroup%
 \fboxsep=\BXleftrightskipdimen%
 \fboxrule=\BXRuleThickness\tfboxrule=\BXRuleThickness\bfboxrule=\BXRuleThickness%
@@ -521,7 +521,7 @@ false setoverprint}}
 %% include array.sty again in Wileyarticle.cls anywhere;     %%
 %% ========================================================= %%
 \RequirePackage{varwidth}%
-\RequirePackage{dcolumn}% 
+\RequirePackage{dcolumn}%
 %
 %% Fonts Used
 %
@@ -762,8 +762,8 @@ false setoverprint}}
 \setlength\dblfloatsep{24\p@ \@plus 2.875\p@ \@minus 1.4375\p@}%
 \setlength\dbltextfloatsep{24\p@ \@plus 2.875\p@ \@minus 1.4375\p@}%
 
-\hyphenation{Figure Figures Table Tables Equation Equations Section Sections Appendix Theorem Lemma Proposition Corollary}% 
-\hyphenation{Claim Conjecture Property Remark Problem Example Definition Algorithm Assumption Axiom Case Hypotheses Note Proof}% 
+\hyphenation{Figure Figures Table Tables Equation Equations Section Sections Appendix Theorem Lemma Proposition Corollary}%
+\hyphenation{Claim Conjecture Property Remark Problem Example Definition Algorithm Assumption Axiom Case Hypotheses Note Proof}%
 
 %%% miscellaneous macros %%%
 \def\zz#1{\vphantom{#1}}%
@@ -1274,7 +1274,7 @@ false setoverprint}}
 \fi%
 %
 \def\listfont{\reset@font\fontfamily{\rmdefault}\normalsize}%
-\def\tablistfont{\tablebodyfont}% 
+\def\tablistfont{\tablebodyfont}%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% article front matter elements %%
@@ -1440,7 +1440,7 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
         {\expandafter\protected@xdef\csname Xname@\@@affmark\endcsname%
              {\csname Xname@\@@affmark\endcsname,\ \filtername#2\@nil}}%
      \unskip\sep\ifnum\addcount=1\else\affnum\fi\let\sep=,}}}\unhbox\authmarkbox}\fi#3%
-    \gdef\authorsep{\enspace$\vert$\enspace}%%% 
+    \gdef\authorsep{\enspace$\vert$\enspace}%%%
     \global\let\sep\@empty\global\let\@corref\@empty%
 }}%
 
@@ -2384,7 +2384,7 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
 %% Regular pagestyle %%
 %
 
-\def\@authormark{}% 
+\def\@authormark{}%
 \def\authormark#1{%
 \markboth{{{#1}}}{{{#1}}}\gdef\@authormark{\def\etal{\textit{ET AL.}}\let\AQ\AHAQ#1}\gdef\@authormarkforcite{\undefined\def\etal{\textit{et al.}}#1}}%
 \def\etal{\textit{et al.}}%
@@ -2422,7 +2422,7 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
 
 %% Macros for Section headings %%
 
-\setcounter{secnumdepth}{3}% 
+\setcounter{secnumdepth}{3}%
 %
 
 \newif\if@FTSection%
@@ -2441,7 +2441,7 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
 \if@AMArefstyle%
    \IfFileExists{NJDnatbib.sty}{\usepackage[numbers,super]{NJDnatbib}}{\usepackage[numbers,super]{natbib}}%
    \bibliographystyle{MRM-AMA}%
-\renewcommand\@biblabel[1]{#1.} 
+\renewcommand\@biblabel[1]{#1.}
 %   \bibpunct{(}{)}{,}{n}{}{}%
 \bibsep=0pt%
    \renewcommand{\bibfont}{\reset@font\fontfamily{\rmdefault}\fontsize{8.5bp}{11.5}\selectfont\baselineskip=11.5\p@}%
@@ -2507,7 +2507,7 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
 \RequirePackage{booktabs}%
 
 %% TABLE NOTES %%
-\newenvironment{tablenotes}{\tablefootnotefont\list{}{\setlength{\labelsep}{0pt}% 
+\newenvironment{tablenotes}{\tablefootnotefont\list{}{\setlength{\labelsep}{0pt}%
 \setlength{\labelwidth}{0pt}%
 \setlength{\leftmargin}{0pt}%
 \setlength{\rightmargin}{0pt}%
@@ -2533,11 +2533,11 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
 %               {\thisfloatpagestyle{headings}\end@rotdblfloat}
 
 %% MACROS FOR QUOTE %%
-\renewenvironment{quote}{\list{}{\setlength{\labelsep}{0pt}% 
+\renewenvironment{quote}{\list{}{\setlength{\labelsep}{0pt}%
 \setlength{\labelwidth}{0pt}%
 \setlength{\leftmargin}{\parindentvalue}%
 \setlength{\rightmargin}{\parindentvalue}%
-\setlength{\topsep}{12.5pt \@plus2pt \@minus1pt}% 
+\setlength{\topsep}{12.5pt \@plus2pt \@minus1pt}%
 \setlength{\itemsep}{0pt}%
 \setlength{\partopsep}{0pt}%
 \setlength{\listparindent}{0em}%
@@ -2645,7 +2645,7 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
   {.} % Punctuation after theorem head
   {5\p@} % Space after theorem head
   {\thmname{#1}\thmnumber{ #2}\thmnote{. #3}} % Theorem head spec (can be left empty, meaning `normal')
-  
+
 \newtheoremstyle{WBstylethree}
   {6\p@} % Space above
   {6\p@} % Space below
@@ -3204,5 +3204,3 @@ Volume\ \@jvol, Article ID\ \@artid, \thepage~pages\par%
 }%
 
 \endinput
-
-
