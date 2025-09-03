@@ -66,8 +66,38 @@ Thank you for your submission. The paper has been reviewed by two experts, with 
 Given these issues, we are unable to consider the current version of your manuscript further unless you are willing to make substantial revisions to address these concerns. Please be aware that, should you choose to resubmit, the revised manuscript will typically be sent to the same reviewers.\\
 Thank you again for your submission, and we appreciate your understanding.}
 
-\hspace{1em} {\color{blue} We thank both editors for the constructive comments and resubmission invitation.
-We have thoroughly addressed the raised critiques in this revision. Please note that because this is a resubmission and the manuscript is treated as new, we don't provide the marked version.
+\vspace{1em}
+
+\hspace{1em} {\color{blue} We sincerely thank both editors for the constructive comments and resubmission invitation.
+We have thoroughly addressed the raised critiques in this revision:
+\begin{itemize}
+	\item [$\star$] The baseline navigated method did not show convincing results because the previous volunteer 
+	had abrupt and involuntary movements governed by underlying disease. 
+	We identified this with shot-to-shot phase maps in the response letter. 
+	We update the manuscript with Figures 5 and 6, 
+	which compare the navigated and selfgated methods 
+	with two reconstruction methods: MUSE and ADMM unrolling.
+	
+	\item [$\star$] We choose to compare our proposed ADMM unrolling method with MUSE and LLR, 
+	because the former has been clinically adopted while the latter is widely used for 
+	multi-contrast compressed sensing reconstruciton. 
+	We did not compare to other self-supervised learning methods like SSDU, 
+	because SSDU still requires extra datasets for training.
+	Both MUSE and LLR are competitive and representative methods to be compared with.
+	
+	\item [$\star$] We have provided quantitative analysis in Figures 3 and 4, 
+	as well as DTI model fitted colored FA maps in Figure 8. 
+	The ablation study in Figure 3 was conducted with in-plane fully-sampled data, 
+	which we used as reference.
+\end{itemize}
+
+Please note that because this is a resubmission and the manuscript is treated as new, 
+we don't provide the marked version. 
+
+Please also note that the goal of this work is to develop 
+a selfgated self-supervised ADMM unrolling reconstruction technique for high-resolution DWI.
+Collecting large-scale reference datasets to benchmark a wide spectrum of competing methods 
+is beyond the scope of this work.
 }
 
 % ========================================
@@ -84,7 +114,7 @@ We have thoroughly addressed the raised critiques in this revision. Please note 
     \item \textit{The current review of reconstruction methods in the Introduction feels somewhat mixed. Methods for motion-phase correction (e.g., MUSSELS) and k-q joint reconstruction (e.g., DAE) are discussed together, which might obscure their distinct purposes. I suggest that the authors introduce these methods separately to help readers better understand the core objectives of each category.}
 
     \hspace{1em} {\color{blue} Thank you for the suggestion.
-    We have separated these methods in introduction.}
+    We have separated these methods in Introduction.}
 
     \item \textit{Regarding the forward model A used in the proposed ADMM unrolling method (Eq. 2 and Algorithm 1), what was specifically used as the motion phase map $\Phi$? Was it derived from MUSE? The authors note: “However, it (MUSE) requires small undersampling factors per shot and fully sampled DWI acquisition assembling all shots. Alternatively, undersampled DWI acquisition can be enabled via the acquisition of navigators for shot phase estimation.” This gives the impression that navigator-based phase correction should outperform MUSE. However, the results in Fig. 4 suggest otherwise, which seems contradictory.}
 
@@ -157,7 +187,7 @@ We have thoroughly addressed the raised critiques in this revision. Please note 
     \hspace{1em} {\color{blue} Thank you for the questions. 
     	
     	\hspace{1em} The masks are not consistent across repetitions. This is also reflected in the code: 
-    	\url{https://github.com/ZhengguoTan/DeepDWI/blob/main/examples/run_zsssl.py#L45}. For each repetion, the function `uniform\_samp` uses `torch.multinomial` to sample a new mask (\url{https://github.com/ZhengguoTan/DeepDWI/blob/main/src/deepdwi/recons/zsssl.py#L34}). 
+    	\url{https://github.com/ZhengguoTan/DeepDWI/blob/main/examples/run_zsssl.py#L45}. For each repetition, the function `uniform\_samp` uses `torch.multinomial` to sample a new mask (\url{https://github.com/ZhengguoTan/DeepDWI/blob/main/src/deepdwi/recons/zsssl.py#L34}). 
     	
     	\hspace{1em} The zero-shot learning approach as is done in this work requires three disjoint subsets for training, training loss and validation loss (refer to Figure 2). In this way, a model can be trained and tested on a single dataset, without the need of large-scale datasets. In the case of only two disjoint subsets, you will need extra data for validation, as is done in SSDU.
     }
