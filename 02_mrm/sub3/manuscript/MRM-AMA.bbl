@@ -1,0 +1,203 @@
+\begin{thebibliography}{10}
+
+\bibitem{jones_2010_diff}
+D.~K. Jones. {\it {Diffusion MRI: Theory, methods, and applications}}.
+\newblock Oxford University Press; 2010.
+
+\bibitem{mansfield_1977_epi}
+P.~Mansfield. {Multi-planar image formation using NMR spin echoes}.  {\it J
+  Phys C. }1977;10:55-58.
+
+\bibitem{butts_1993_iepi}
+K.~Butts, S.~J. Riederer, R.~L. Ehman, R.~M. Thompson, C.~R. Jack. {Interleaved
+  echo planar imaging on a standard MRI system}.  {\it Magn. Reson. Med..
+  }1993;31:67-72.
+
+\bibitem{liu_2004_diff_spiral}
+C.~Liu, R.~Bammer, D.-h. Kim, M.~E. Moseley. {Self-navigated interleaved spiral
+  (SNAILS): Application to high-resolution diffusion tensor imaging}.  {\it
+  Magn. Reson. Med.. }2004;52:1388-1396.
+
+\bibitem{chen_2013_muse}
+N.-K. Chen, A.~Guidon, H.-C. Chang, A.~W. Song. {A robust multi-shot scan
+  strategy for high-resolution diffusion weighted MRI enabled by multiplexed
+  sensitivity-encoding (MUSE)}.  {\it NeuroImage. }2013;72:41-47.
+
+\bibitem{porter_2009_resolve}
+D.~A. Porter, R.~M. Heidemann. {High resolution diffusion-weighted imaging
+  using readout-segmented echo-planar imaging, parallel imaging and a
+  two-dimensional navigator-based reacquisition}.  {\it Magn. Reson. Med..
+  }2009;62:468-475.
+
+\bibitem{heidemann_2010_resolve7t}
+R.~M. Heidemann, D.~A. Porter, A.~Anwander, et al. {Diffusion imaging in humans
+  at 7 T using readout-segmented EPI and GRAPPA}.  {\it Magn. Reson. Med..
+  }2010;64:9-14.
+
+\bibitem{andersson_2003_topup}
+J.~L.~R. Andersson, S.~Skare, J.~Ashburner. {How to correct susceptibility
+  distortions in spin-echo echo-planar images: application to diffusion tensor
+  imaging}.  {\it NeuroImage. }2003;20:870-888.
+
+\bibitem{setsompop_2012_blipped}
+K.~Setsompop, B.~A. Gagoski, J.~R. Polimeni, T.~Witzel, V.~J. Wedeen, L.~L.
+  Wald. {Blipped-controlled aliasing in parallel imaging for simultaneous
+  multislice echo planar imaging with reduced $g$-factor penalty}.  {\it Magn.
+  Reson. Med.. }2012;67:1210-1224.
+
+\bibitem{pruessmann_1999_sense}
+K.~P. Pruessmann, M.~Weiger, M.~B. Scheidegger, P.~Boesiger. {SENSE:
+  Sensitivity encoding for fast MRI}.  {\it Magn. Reson. Med..
+  }1999;42:952-962.
+
+\bibitem{griswold_2002_grappa}
+M.~A. Griswold, P.~M. Jakob, R.~M. Heidemann, et al. {Generalized
+  autocalibrating partially parallel acquisitions (GRAPPA)}.  {\it Magn. Reson.
+  Med.. }2002;47:1202-1210.
+
+\bibitem{bammer_2001_epi_sense}
+R.~Bammer, S.~L. Keeling, M.~Augustin, et al. {Improved diffusion-weighted
+  single-shot echo-planar imaging (EPI) in stroke using sensitivity encoding
+  (SENSE)}.  {\it Magn. Reson. Med.. }2001;46:548-554.
+
+\bibitem{lustig_2007_cs}
+M.~Lustig, D.~Donoho, J.~M. Pauly. {Sparse MRI: The application of compressed
+  sensing for rapid MR imaging}.  {\it Magn. Reson. Med.. }2007;58:1182-1195.
+
+\bibitem{mani_2017_mussels}
+M.~Mani, M.~Jacob, D.~Kelley, V.~Magnotta. {Multi-shot sensitivity-encoded
+  diffusion data recovery using structured low-rank matrix completion
+  (MUSSELS)}.  {\it Magn. Reson. Med.. }2017;78:494-507.
+
+\bibitem{hu_2020_spa_llr}
+Y.~Hu, X.~Wang, Q.~Tian, et al. {Multi-shot diffusion-weighted MRI
+  reconstruction with magnitude-based spatial-angular locally low-rank
+  regularization (SPA-LLR)}.  {\it Magn. Reson. Med.. }2020;83:1596-1607.
+
+\bibitem{veraart_2016_denoise}
+J.~Veraart, D.~S. Novikov, D.~Christiaens, B.~Ades-aron, J.~Sijbers,
+  E.~Fieremans. Denoising of diffusion MRI using random matrix theory.  {\it
+  NeuroImage. }2016;142:394-406.
+
+\bibitem{tian_2023_sdndti}
+Q.~Tian, Z.~Li, Q.~Fan, et al. {SDnDTI: Self-supervised deep learning-based
+  denoising for diffusion tensor MRI}.  {\it NeuroImage. }2023;253:119033.
+
+\bibitem{zhang_2015_llr}
+T.~Zhang, J.~M. Pauly, I.~R. Levesque. {Accelerated parameter mapping with a
+  locally low rank constraint}.  {\it Magn. Reson. Med.. }2015;73:655-661.
+
+\bibitem{tan_2024_naviepi}
+Z.~Tan, P.~A. Liebig, R.~M. Heidemann, F.~B. Laun, F.~Knoll. {Accelerated
+  diffusion-weighted magnetic resonance imaging at 7 T: Joint reconstruction
+  for shift-encoded navigator-based interleaved echo planar imaging
+  (JETS-NAViEPI)}.  {\it Imaging Neuroscience. }2024;2:1-15.
+
+\bibitem{dong_2025_nllr}
+Y.~Dong, X.~Ye, C.~Li, M.~J.~P. van Osch, P.~B\"{o}rnert. {Navigator-free
+  multi-shot diffusion MRI via non-local low-rank reconstruction}.  {\it Magn.
+  Reson. Med.. }2025;94:1592-1603.
+
+\bibitem{monga_2021_algunroll}
+V.~Monga, Y.~Li, Y.~C. Eldar. {Algorithm Unrolling: Interpretable, Efficient
+  Deep Learning for Signal and Image Processing}.  {\it IEEE Signal Processing
+  Magazine. }2021;38:18-44.
+
+\bibitem{wang_2016_dl}
+S.~Wang, Z.~Su, L.~Ying, et al. {Accelerating magnetic resonance imaging via
+  deep learning}.  In:  {\it 13th IEEE International Symposium on Biomedical
+  Imaging (ISBI'13)}:514-517; 2016.
+
+\bibitem{hammernik_2018_varnet}
+K.~Hammernik, T.~Klatzer, E.~Kobler, et al. {Learning a variational network for
+  reconstruction of accelerated MRI data}.  {\it Magn. Reson. Med..
+  }2018;79:3055-3071.
+
+\bibitem{yang_2018_admmnet}
+Y.~Yang, J.~Sun, H.~Li, Z.~Xu. {ADMM-CSNet: A Deep Learning Approach for Image
+  Compressive Sensing}.  {\it IEEE Transactions on Pattern Analysis and Machine
+  Intelligence. }2018;42:521-538.
+
+\bibitem{aggarwal_2018_modl}
+H.~K. Aggarwal, M.~P. Mani, M.~Jacob. {MoDL: Model-based deep learning
+  architecture for inverse problems}.  {\it IEEE Trans. Med. Imaging.
+  }2018;38:394-405.
+
+\bibitem{mani_2021_qmodel}
+M.~Mani, V.~A. Magnotta, M.~Jacob. {qModeL: A plug-and-play model-based
+  reconstruction for highly accelerated multi-shot diffusion MRI using learned
+  priors}.  {\it Magn. Reson. Med.. }2021;86:835-851.
+
+\bibitem{hinton_2006_ae}
+G.~E. Hinton, R.~R. Salakhutdinov. Reducing the dimensionality of data with
+  neural networks.  {\it Science. }2006;313:504-507.
+
+\bibitem{yaman_2022_zs}
+B.~Yaman, S.~A.~H. Hosseini, M.~Akçakaya. {Zero-shot self-supervised learning
+  for MRI reconstruction}.  In:  {\it 10th International Conference on Learning
+  Representations (ICLR'10)}; 2022.
+
+\bibitem{cho_2023_deepslr}
+J.~Cho, Y.~Jun, X.~Wang, C.~Kobayshi, B.~Bilgic. {Improved Multi-shot
+  Diffusion-Weighted MRI with Zero-Shot Self-supervised Learning
+  Reconstruction}.  In:  {\it 26th International Conference on Medical Image
+  Computing and Computer-Assisted Intervention (MICCAI'26)}:457-466; 2023.
+
+\bibitem{lehtinen_2018_noise2noise}
+J.~Lehtinen, J.~Munkberg, J.~Hasselgren, et al. {Noise2Noise: Learning Imaging
+  Restoration without Clean Data}.  In:  {\it Proceedings of the 35th
+  International Conference on Machine Learning (ICML'35)}:2965-2974; 2018.
+
+\bibitem{quan_2020_self2self}
+Y.~Quan, M.~Chen, T.~Pang, H.~Ji. {Self2Self With Dropout: Learning
+  Self-Supervised Denoising From Single Image}.  In:  {\it IEEE/CVF Conference
+  on Computer Vision and Pattern Recognition (CVPR 2020)}:1890-1898; 2020.
+
+\bibitem{uecker_2009_nlinv_diff}
+M.~Uecker, A.~Karaus, J.~Frahm. {Inverse reconstruction method for segmented
+  multishot diffusion-weighted MRI with multiple coils}.  {\it Magn. Reson.
+  Med.. }2009;62:1342-1348.
+
+\bibitem{merrem_2019_nl_steam}
+A.~Merrem, S.~Hofer, A.~S.~A. Hosseini, et al. {Diffusion-weighted MRI of the
+  prostate without susceptibility artifacts: Undersampled multi-shot
+  turbo-STEAM with rotated radial trajectories}.  {\it NMR Biomed..
+  }2019;32:e4074.
+
+\bibitem{kingma_2015_adam}
+D.~P. Kingma, J.~Ba. {ADAM: A Method for Stochastic Optimization}.  In:  {\it
+  3rd International Conference on Learning Representations (ICLR'3)}; 2015.
+
+\bibitem{yaman_2020_ssdu}
+B.~Yaman, S.~A.~H. Hosseini, S.~Moeller, J.~Ellermann, K.~Uğurbil,
+  M.~Akçakaya. {Self-supervised learning of physics-guided reconstruction
+  neural networks without fully sampled reference data}.  {\it Magn. Reson.
+  Med.. }2020;84:3172-3191.
+
+\bibitem{he_2016_resnet}
+K.~He, X.~Zhang, S.~Ren, J.~Sun. {Deep residual learning for image
+  recognition}.  In:  {\it IEEE Conference on Computer Vision and Pattern
+  Recognition (CVPR'16)}:770-778; 2016.
+
+\bibitem{cordero_2019_cplxdwi}
+L.~Cordero-Grande, D.~Christiaens, J.~Hutter, A.~N. Price, J.~V. Hajnal.
+  {Complex diffusion-weighted image estimation via matrix recovery under
+  general noise models}.  {\it NeuroImage. }2019;200:391-404.
+
+\bibitem{pietsch_2021_dstripe}
+M.~Pietsch, D.~Christiaens, J.~V. Hajnal, J.-D. Tournier. {dStripe: Slice
+  artefact correction in diffusion MRI via constrained neural network}.  {\it
+  Medical Image Analysis. }2021;74:102255.
+
+\bibitem{zahneisen_2017_blipud}
+B.~Zahneisen, M.~Aksoy, J.~Maclaren, C.~Wuerslin, R.~Bammer. {Extended
+  hybrid-space SENSE for EPI: Off-resonance and eddy current corrected joint
+  interleaved blip-up/down reconstruction}.  {\it NeuroImage. }2017;153:97-108.
+
+\bibitem{tan_2023_meco}
+Z.~Tan, C.~Unterberg-Buchwald, M.~Blumenthal, et al. {Free-breathing liver fat,
+  $R_2^*$ and $B_0$ field mapping using multi-echo radial FLASH and regularized
+  model-based reconstruction}.  {\it IEEE Transactions on Medical Imaging.
+  }2023;42:1374-1387.
+
+\end{thebibliography}

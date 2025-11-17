@@ -1,0 +1,189 @@
+\documentclass[a4paper,11pt,twoside]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[top=2.5cm,bottom=2.5cm,outer=2.5cm,inner=2.0cm]{geometry}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[noabbrev,capitalise]{cleveref}
+\usepackage{colortbl}
+\usepackage{color,soul}
+\usepackage{xcolor}
+
+\usepackage{enumitem}
+% \setlist[enumerate,1]{label=\color{blue}(\arabic*)}
+\setlist[enumerate,1]{label=(\arabic*)}
+
+\usepackage{graphicx}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks = true,
+	linkbordercolor = {white},
+}
+
+\usepackage{listings}
+
+\usepackage{setspace}
+\renewcommand{\baselinestretch}{1.3}
+
+\usepackage{siunitx}
+\usepackage{threeparttable}
+\usepackage{multirow}
+
+\begin{document}
+	
+	\begin{center}
+		{\large\textbf{MRM-25-26288: Responses to Editors and Reviewers}}
+	\end{center}
+	
+	% Robin: cortex / brain stem / hippocampus /
+	
+	% ========================================
+	%     Editor
+	% ========================================
+	
+	\noindent \underline{\textbf{Editor's Comments to the Author:}}
+	
+	\noindent \textit{Thanks for resubmitting to Magn Reson Med. Your new manuscript went back to the original reviewers who both agree that it has been improved. However, there are still some remaining issues and corrections that are requested. We invite a further minor revision that seeks to address the remaining points that have been made. You may also wish to take this opportunity to ensure that your reference list is up to date and captures any recent relevant papers.}
+	
+	
+	% ========================================
+	%     Deputy Editor
+	% ========================================
+	\vspace{1em}
+	
+	\noindent \underline{\textbf{Deputy Editor: Wang, Shanshan Comments to Author:}}
+	
+	\noindent \textit{The paper has been reviewed by two experts, who still have some concerns. Please properly address them. Many thanks.}
+	
+	\vspace{1em}
+	
+	\hspace{1em} {\color{blue} We sincerely thank both editors for the encouraging comments. We have carefully addressed the comments:
+	\begin{itemize}
+		\item We have rewritten part of Introduction to better motivate the proposed ADMM unrolling for high-resolution DWI.
+		\item We have updated our reference list, including the recent papers on noise2noise, self2self, and zero-shot self-supervised learning.
+		\item We provide a document on Supplementary Information, which includes:
+		\begin{enumerate}
+			\item The architecture of the ResNet;
+			\item The results of an ablation study;
+			\item The experiment that tests the trained model on a different subject to demonstrate the generalizability of the proposed self-supervised learning method;
+			\item Reconstruction times.
+		\end{enumerate}
+	\end{itemize}
+	}
+	
+	% ========================================
+	%     Reviewer 1
+	% ========================================
+	\clearpage
+	\noindent \underline{\textbf{Reviewer 1}}
+	
+	\textit{This manuscript's application of an unrolled ADMM network with a zero-shot approach for DWI reconstruction is an interesting contribution, particularly the model's demonstrated generalizability across slices. However, there are several aspects that would benefit from further consideration and revision.\\
+	\indent Regarding the manuscript's academic writing and presentation, there are several opportunities for enhancement.}
+	
+	\vspace{1em}
+	
+	\begin{enumerate}
+		\item \textit{In the introduction, the presentation of related works could be strengthened by more clearly articulating the specific limitations of existing unrolled and self-supervised methods, which would better motivate the proposed solution.}
+		
+		\hspace{1em} {\color{blue} Thank you for the suggestion. We have rewritten the introduction.}
+		
+		\item \textit{In the Method section, a couple of refinements could enhance clarity. The flowchart for Algorithm 1 is somewhat lengthy; streamlining it to highlight only the most essential steps would make it more accessible. Additionally, the self-supervised learning strategy should be supplemented with rigorous mathematical formulas to formally define the process.}
+		
+		\hspace{1em} {\color{blue} Thank you for the suggestion. After careful consideration, we would like to keep the pseudo code and Figure 2. We think this combination best explains how the data splitting is integrated with the training of ADMM unrolling.}
+		
+		\item \textit{Finally, to substantiate the claim of faster reconstruction, the manuscript should include a direct, quantitative comparison of reconstruction times against competing methods.}
+		
+		\hspace{1em} {\color{blue} Please find the comparison in Table S1 in Supplementary Information.}
+		
+	\end{enumerate}
+	
+	\noindent \textit{There a few points require clarification in the manuscript.}
+	
+	\begin{enumerate}[resume]
+
+		\item \textit{In Section 2.3, could you provide more specific details regarding the ADMM unrolling implementation? For example, information on the architecture of the ResNet used, such as the number of layers, would be very helpful.}
+		
+		\hspace{1em} {\color{blue} Thank you for the question. 
+			Please find the architecture of the ResNet in Figure S1 in Supplementary Information.
+			We also provide the source code on ResNet here: \url{https://github.com/ZhengguoTan/DeepDWI/blob/main/src/deepdwi/models/resnet.py}.}
+		
+		\item \textit{Figure 9 suggests that $\lambda$ from Equation (3) is a learnable parameter. Is the penalty parameter $\rho$ in the same equation also treated as learnable, or is it a fixed value?}
+		
+		\hspace{1em} {\color{blue} Thank you for the question. In the current implementation, the penalty parameter $\rho$ in ADMM is kept as a fixed value, 0.05.}
+		
+		\item \textit{In the ablation study described in Section 3.1, you compare the reconstruction results of MUSE, LLR, and ADMM unrolling for both 4-shot and 2-shot acquisitions. Could you clarify how this comparison constitutes an ablation study? An ablation study typically analyzes the impact of removing specific components of the proposed model, whereas this seems to be a performance comparison across different methods under varying conditions.}
+		
+		\hspace{1em} {\color{blue} Thank you for the constructive comments.
+		\begin{itemize}
+			\item We agree that the result in Figure 3 (Section 3.1) is not an ablation study, 
+			but a retrospective study. We correct the wording in the manuscript.
+			\item We provide an ablation study in Figure S2 in Supplementary Information. 
+			Here, we replace the ResNet with an Identity module. 
+			In other words, we don't embed ResNet into ADMM unrolling and 
+			compare the results without and with ResNet.
+		\end{itemize}
+		}
+		
+	\end{enumerate}
+	
+	
+	% ========================================
+	%     Reviewer 2
+	% ========================================
+	\clearpage
+	\noindent \underline{\textbf{Reviewer 2}}
+	
+	\textit{Thank you to the authors for addressing some of my previous concerns. However, the current version still does not meet the requirements for publication, and several issues remain to be resolved:}
+	
+	\vspace{1em}
+	
+	\begin{enumerate}
+
+		\item \textit{A major limitation of the proposed method is that it requires training a separate model for each subject, which significantly restricts its applicability. I suggest that the authors provide detailed training and testing times. Alternatively, they could evaluate whether a model trained on one subject’s data can be generalized to other subjects.}
+		
+		\hspace{1em} {\color{blue} Thank you for the insightful comments. 
+		\begin{itemize}
+			\item Please find detailed training and testing times in Table S1 in Supplementary Information.
+			\item We evaluate the model trained on one subject but inferred on a different subject. 
+			Please find details in Figure S3 in Supplementary Information.
+		\end{itemize}
+		}
+		
+		\item \textit{In Table 3, it appears that the fully sampled data are different across methods. What is the rationale for this design choice? Why are the fully sampled datasets not identical?}
+		
+		\hspace{1em} {\color{blue} Sorry, we don't have Table 3. If you meant Figure 3, 
+			we clarify that both columns in Figure 3 come from the same scan. 
+			In other words, we acquired 4-shot fully-sampled data as reference. 
+			Reconstruction results of the 4-shot data are provided as the first column in Figure 3.
+			Then we retrospecitvely undersampled the data to have only 2 shots, i.e., 2-fold undersampling.
+			Reconstruction results of the retro.~2-shot data are provided as the second column in Figure 3.}
+		
+		\item \textit{In Figure 9, is the $\lambda$ parameter the same as the $\lambda$ used in Algorithm 1? Their initial values seem to be inconsistent.}
+		
+		\hspace{1em} {\color{blue} Thank you for the comment. The parameter $\lambda$ in Figure 9 and Algorithm 1 is the same and is initialized as 0.05. 
+			Please note that the $\lambda$ curve in Figure 9 is colored blue, and its corresponding y-axis is on the right side of Figure 9 
+			(with the same color blue).}
+		
+		\item \textit{On page 9, line 50, the authors state: “However, we also observed that the self-gated ... (e.g., the 0.5×0.5×2.0 mm$^3$ DWI data with an acceleration of 15×2 per shot).” How was the 0.5×0.5×2.0 mm$^3$ dataset acquired? The manuscript does not explain.}
+		
+		\hspace{1em} {\color{blue} Thank you for the insightful comment. We removed the sentence on $0.5\times0.5\times2.0$~mm$^3$, 
+			which is not relevant to this manuscript.}
+		
+		\item \textit{For retrospective experiments, I recommend including reference data for comparison.}
+		
+		\hspace{1em} {\color{blue} Thank you for the suggestion. 
+			We would like to clarify that in the retrospective experiment, 
+			we use the 4-shot fully-sampled data as reference.}
+		
+		\item \textit{Please check the consistency of abbreviations in the manuscript, such as “selfgated” vs. “self-gated,” and standardize them accordingly.}
+		
+		\hspace{1em} {\color{blue} Done. We now use consistently "self-gated".}
+		
+	\end{enumerate}
+	
+\end{document}
